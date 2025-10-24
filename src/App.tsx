@@ -1,8 +1,9 @@
 import { useState, useCallback, useEffect } from 'react'
-import { PlusIcon, MagnifyingGlassIcon, Bars3Icon } from '@heroicons/react/24/outline'
+import { PlusIcon, Bars3Icon } from '@heroicons/react/24/outline'
 import { MemoForm } from './components/MemoForm'
 import { MemoList } from './components/MemoList'
 import { MemoDetail } from './components/MemoDetail'
+import { SearchAndFilterBar } from './components/SearchAndFilterBar'
 import { MemoService } from './services/MemoService'
 import { Memo } from './models/Memo'
 
@@ -15,6 +16,7 @@ interface AppState {
   editingMemoId: string | null
   searchQuery: string
   memos: Memo[]
+  filteredMemos: Memo[]
   isLoading: boolean
   error: string | null
 }
@@ -26,6 +28,7 @@ function App() {
     editingMemoId: null,
     searchQuery: '',
     memos: [],
+    filteredMemos: [],
     isLoading: true,
     error: null
   })
@@ -35,7 +38,7 @@ function App() {
       setState(prev => ({ ...prev, isLoading: true, error: null }))
       const memoService = MemoService.getInstance()
       const memos = memoService.getAllMemos()
-      setState(prev => ({ ...prev, memos, isLoading: false }))
+      setState(prev => ({ ...prev, memos, filteredMemos: memos, isLoading: false }))
     } catch (error) {
       setState(prev => ({ 
         ...prev, 
@@ -107,6 +110,10 @@ function App() {
     setState(prev => ({ ...prev, searchQuery: query }))
   }, [])
 
+  const handleFilteredResults = useCallback((filteredMemos: Memo[]) => {
+    setState(prev => ({ ...prev, filteredMemos }))
+  }, [])
+
   // Get current memo for detail/edit views
   const currentMemo = state.selectedMemoId 
     ? state.memos.find(m => m.id === state.selectedMemoId)
@@ -153,25 +160,13 @@ function App() {
             {/* Header actions based on current view */}
             <div className="flex items-center space-x-4">
               {state.currentView === 'list' && (
-                <>
-                  <div className="relative">
-                    <MagnifyingGlassIcon className="h-5 w-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
-                    <input
-                      type="text"
-                      placeholder="メモを検索..."
-                      value={state.searchQuery}
-                      onChange={(e) => handleSearchChange(e.target.value)}
-                      className="pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
-                    />
-                  </div>
-                  <button
-                    onClick={() => handleViewChange('create')}
-                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                  >
-                    <PlusIcon className="h-4 w-4 mr-2" />
-                    新規作成
-                  </button>
-                </>
+                <button
+                  onClick={() => handleViewChange('create')}
+                  className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                >
+                  <PlusIcon className="h-4 w-4 mr-2" />
+                  新規作成
+                </button>
               )}
               
               {(state.currentView === 'detail' || state.currentView === 'create' || state.currentView === 'edit') && (
@@ -192,13 +187,22 @@ function App() {
         {errorDisplay}
         
         {state.currentView === 'list' && (
-          <MemoList
-            onMemoSelect={handleMemoSelect}
-            onMemoEdit={handleMemoEdit}
-            onMemoDelete={handleMemoDelete}
-            selectedMemoId={state.selectedMemoId || undefined}
-            searchQuery={state.searchQuery}
-          />
+          <>
+            <SearchAndFilterBar
+              memos={state.memos}
+              onFilteredResults={handleFilteredResults}
+              searchQuery={state.searchQuery}
+              onSearchQueryChange={handleSearchChange}
+              className="mb-6"
+            />
+            <MemoList
+              onMemoSelect={handleMemoSelect}
+              onMemoEdit={handleMemoEdit}
+              onMemoDelete={handleMemoDelete}
+              selectedMemoId={state.selectedMemoId || undefined}
+              searchQuery={state.searchQuery}
+            />
+          </>
         )}
 
         {state.currentView === 'detail' && currentMemo && (
