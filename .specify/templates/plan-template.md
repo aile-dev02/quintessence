@@ -31,7 +31,32 @@
 
 *GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
 
-[Gates determined based on constitution file]
+**Specification-First Development**:
+- [ ] Complete validated specification exists in spec.md
+- [ ] Specification is technology-agnostic (no languages, frameworks, databases mentioned)
+- [ ] All functional requirements are testable and unambiguous
+- [ ] Success criteria are measurable and technology-agnostic
+
+**Independent User Story Delivery**:
+- [ ] User stories are prioritized (P1, P2, P3) with clear MVP definition
+- [ ] Each story can be implemented, tested, and delivered independently
+- [ ] No cross-story dependencies that break independent delivery
+- [ ] P1 story represents viable standalone value
+
+**Template-Driven Consistency**:
+- [ ] All artifacts follow standardized templates from .specify/templates/
+- [ ] Any template deviations are explicitly justified
+- [ ] Required sections from templates are completed
+
+**Quality Gates and Validation**:
+- [ ] Specification passed quality validation checklist
+- [ ] Plan will undergo constitutional compliance review
+- [ ] Clear validation criteria defined for each development phase
+
+**Simplicity and YAGNI**:
+- [ ] Feature starts with simplest possible implementation
+- [ ] Any additional complexity is documented in Complexity Tracking section
+- [ ] Simpler alternatives have been considered and rejection rationale provided
 
 ## Project Structure
 
