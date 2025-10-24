@@ -179,7 +179,7 @@ export class MemoService {
       }
 
       return results
-    } catch (error) {
+    } catch {
       // Fallback to simple local search
       return this.simpleSearch(query, maxResults)
     }

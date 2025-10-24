@@ -5,7 +5,6 @@ import { MemoList } from './components/MemoList'
 import { MemoDetail } from './components/MemoDetail'
 import { MemoService } from './services/MemoService'
 import { Memo } from './models/Memo'
-import type { MemoStatus } from './types'
 
 // View types for navigation
 type ViewType = 'list' | 'detail' | 'create' | 'edit'
@@ -92,6 +91,7 @@ function App() {
 
   const handleMemoSave = useCallback(async (memo: Memo) => {
     try {
+      console.log('Memo saved:', memo)
       await loadMemos()
       handleBackToList()
     } catch (error) {

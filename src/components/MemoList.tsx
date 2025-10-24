@@ -58,7 +58,7 @@ export const MemoList: React.FC<MemoListProps> = ({
   const [selectedTags, setSelectedTags] = useState<string[]>([])
   const [statusFilter, setStatusFilter] = useState<string>('all')
 
-  const memoService = useMemo(() => new MemoService(), [])
+  const memoService = useMemo(() => MemoService.getInstance(), [])
 
   // Load memos
   const loadMemos = useCallback(async () => {

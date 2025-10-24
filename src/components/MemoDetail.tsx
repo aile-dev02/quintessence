@@ -50,7 +50,7 @@ export const MemoDetail: React.FC<MemoDetailProps> = ({
   const [error, setError] = useState<string | null>(null)
   const [isExpanded, setIsExpanded] = useState(false)
 
-  const memoService = useMemo(() => new MemoService(), [])
+  const memoService = useMemo(() => MemoService.getInstance(), [])
   const attachmentService = useMemo(() => new AttachmentService(), [])
 
   // Load attachments

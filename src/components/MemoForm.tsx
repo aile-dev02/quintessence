@@ -44,7 +44,7 @@ export const MemoForm: React.FC<MemoFormProps> = ({
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [tagInput, setTagInput] = useState('')
 
-  const memoService = new MemoService()
+  const memoService = MemoService.getInstance()
 
   // Form validation
   const validateForm = useCallback((): boolean => {
