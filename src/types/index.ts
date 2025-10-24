@@ -1,10 +1,15 @@
+export type MemoStatus = 'draft' | 'published' | 'archived'
+export type Priority = 'low' | 'medium' | 'high' | 'critical'
+
 export interface Memo {
   id: string
   title: string
   body: string
   tags: string[]
-  projectId?: string
-  attachments: Attachment[]
+  attachmentIds: string[]
+  status: MemoStatus
+  priority: Priority
+  projectId: string | null
   createdAt: Date
   updatedAt: Date
   linkedCards: string[]
@@ -147,13 +152,15 @@ export interface ImportResult {
   errors: string[]
 }
 
-export enum StorageErrorType {
-  QUOTA_EXCEEDED = 'QUOTA_EXCEEDED',
-  CORRUPTED_DATA = 'CORRUPTED_DATA',
-  INVALID_FORMAT = 'INVALID_FORMAT',
-  NOT_FOUND = 'NOT_FOUND',
-  PERMISSION_DENIED = 'PERMISSION_DENIED'
-}
+export const StorageErrorType = {
+  QUOTA_EXCEEDED: 'QUOTA_EXCEEDED',
+  CORRUPTED_DATA: 'CORRUPTED_DATA',
+  INVALID_FORMAT: 'INVALID_FORMAT',
+  NOT_FOUND: 'NOT_FOUND',
+  PERMISSION_DENIED: 'PERMISSION_DENIED'
+} as const
+
+export type StorageErrorType = typeof StorageErrorType[keyof typeof StorageErrorType]
 
 export interface StorageError extends Error {
   type: StorageErrorType
