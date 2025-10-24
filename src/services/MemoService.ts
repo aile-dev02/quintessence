@@ -12,13 +12,21 @@ import { ValidationError, StorageError } from '../utils/errors'
 
 export class MemoService {
   private static readonly STORAGE_KEY = 'memos'
+  private static instance: MemoService
   
   private localStorageService: LocalStorageService
   private indexedDBService: IndexedDBService
 
-  constructor() {
+  private constructor() {
     this.localStorageService = LocalStorageService.getInstance()
     this.indexedDBService = IndexedDBService.getInstance()
+  }
+
+  static getInstance(): MemoService {
+    if (!MemoService.instance) {
+      MemoService.instance = new MemoService()
+    }
+    return MemoService.instance
   }
 
   /**

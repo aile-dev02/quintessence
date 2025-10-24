@@ -1,34 +1,238 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+import { useState, useCallback, useEffect } from 'react'
+import { PlusIcon, MagnifyingGlassIcon, Bars3Icon } from '@heroicons/react/24/outline'
+import { MemoForm } from './components/MemoForm'
+import { MemoList } from './components/MemoList'
+import { MemoDetail } from './components/MemoDetail'
+import { MemoService } from './services/MemoService'
+import { Memo } from './models/Memo'
+import type { MemoStatus } from './types'
+
+// View types for navigation
+type ViewType = 'list' | 'detail' | 'create' | 'edit'
+
+interface AppState {
+  currentView: ViewType
+  selectedMemoId: string | null
+  editingMemoId: string | null
+  searchQuery: string
+  memos: Memo[]
+  isLoading: boolean
+  error: string | null
+}
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [state, setState] = useState<AppState>({
+    currentView: 'list',
+    selectedMemoId: null,
+    editingMemoId: null,
+    searchQuery: '',
+    memos: [],
+    isLoading: true,
+    error: null
+  })
+
+  const loadMemos = useCallback(async () => {
+    try {
+      setState(prev => ({ ...prev, isLoading: true, error: null }))
+      const memoService = MemoService.getInstance()
+      const memos = memoService.getAllMemos()
+      setState(prev => ({ ...prev, memos, isLoading: false }))
+    } catch (error) {
+      setState(prev => ({ 
+        ...prev, 
+        error: error instanceof Error ? error.message : 'メモの読み込みに失敗しました',
+        isLoading: false 
+      }))
+    }
+  }, [])
+
+  // Load memos on component mount
+  useEffect(() => {
+    loadMemos()
+  }, [loadMemos])
+
+  // Navigation handlers
+  const handleViewChange = useCallback((view: ViewType, memoId?: string) => {
+    setState(prev => ({
+      ...prev,
+      currentView: view,
+      selectedMemoId: memoId || null,
+      editingMemoId: view === 'edit' ? memoId || null : null
+    }))
+  }, [])
+
+  const handleBackToList = useCallback(() => {
+    handleViewChange('list')
+  }, [handleViewChange])
+
+  // Memo operations
+  const handleMemoSelect = useCallback((memo: Memo) => {
+    handleViewChange('detail', memo.id)
+  }, [handleViewChange])
+
+  const handleMemoEdit = useCallback((memo: Memo) => {
+    handleViewChange('edit', memo.id)
+  }, [handleViewChange])
+
+  const handleMemoDelete = useCallback(async (memo: Memo) => {
+    if (!confirm('このメモを削除しますか？')) return
+
+    try {
+      const memoService = MemoService.getInstance()
+      await memoService.deleteMemo(memo.id)
+      await loadMemos()
+      handleBackToList()
+    } catch (error) {
+      setState(prev => ({ 
+        ...prev, 
+        error: error instanceof Error ? error.message : 'メモの削除に失敗しました'
+      }))
+    }
+  }, [loadMemos, handleBackToList])
+
+  const handleMemoSave = useCallback(async (memo: Memo) => {
+    try {
+      await loadMemos()
+      handleBackToList()
+    } catch (error) {
+      setState(prev => ({ 
+        ...prev, 
+        error: error instanceof Error ? error.message : 'メモの保存に失敗しました'
+      }))
+    }
+  }, [loadMemos, handleBackToList])
+
+  // Filter handlers
+  const handleSearchChange = useCallback((query: string) => {
+    setState(prev => ({ ...prev, searchQuery: query }))
+  }, [])
+
+  // Get current memo for detail/edit views
+  const currentMemo = state.selectedMemoId 
+    ? state.memos.find(m => m.id === state.selectedMemoId)
+    : undefined
+
+  const editingMemo = state.editingMemoId
+    ? state.memos.find(m => m.id === state.editingMemoId)
+    : undefined
+
+  // Error display
+  const errorDisplay = state.error && (
+    <div className="bg-red-50 border border-red-200 rounded-md p-4 mb-6">
+      <div className="flex">
+        <div className="ml-3">
+          <h3 className="text-sm font-medium text-red-800">エラーが発生しました</h3>
+          <div className="mt-2 text-sm text-red-700">
+            <p>{state.error}</p>
+          </div>
+          <div className="mt-4">
+            <button
+              type="button"
+              className="bg-red-100 px-2 py-1 rounded-md text-sm font-medium text-red-800 hover:bg-red-200"
+              onClick={() => setState(prev => ({ ...prev, error: null }))}
+            >
+              閉じる
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
 
   return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
+    <div className="min-h-screen bg-gray-50">
+      {/* Header */}
+      <header className="bg-white shadow-sm border-b border-gray-200">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16">
+            <div className="flex items-center">
+              <Bars3Icon className="h-6 w-6 text-gray-500 mr-3" />
+              <h1 className="text-xl font-semibold text-gray-900">TestMemo</h1>
+            </div>
+            
+            {/* Header actions based on current view */}
+            <div className="flex items-center space-x-4">
+              {state.currentView === 'list' && (
+                <>
+                  <div className="relative">
+                    <MagnifyingGlassIcon className="h-5 w-5 text-gray-400 absolute left-3 top-1/2 transform -translate-y-1/2" />
+                    <input
+                      type="text"
+                      placeholder="メモを検索..."
+                      value={state.searchQuery}
+                      onChange={(e) => handleSearchChange(e.target.value)}
+                      className="pl-10 pr-4 py-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                    />
+                  </div>
+                  <button
+                    onClick={() => handleViewChange('create')}
+                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                  >
+                    <PlusIcon className="h-4 w-4 mr-2" />
+                    新規作成
+                  </button>
+                </>
+              )}
+              
+              {(state.currentView === 'detail' || state.currentView === 'create' || state.currentView === 'edit') && (
+                <button
+                  onClick={handleBackToList}
+                  className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                >
+                  一覧に戻る
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      </header>
+
+      {/* Main content */}
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        {errorDisplay}
+        
+        {state.currentView === 'list' && (
+          <MemoList
+            onMemoSelect={handleMemoSelect}
+            onMemoEdit={handleMemoEdit}
+            onMemoDelete={handleMemoDelete}
+            selectedMemoId={state.selectedMemoId || undefined}
+            searchQuery={state.searchQuery}
+          />
+        )}
+
+        {state.currentView === 'detail' && currentMemo && (
+          <MemoDetail
+            memo={currentMemo}
+            onEdit={() => handleMemoEdit(currentMemo)}
+            onDelete={() => handleMemoDelete(currentMemo)}
+            onClose={handleBackToList}
+          />
+        )}
+
+        {state.currentView === 'create' && (
+          <div>
+            <h2 className="text-2xl font-bold text-gray-900 mb-6">新しいメモを作成</h2>
+            <MemoForm
+              onSave={handleMemoSave}
+              onCancel={handleBackToList}
+            />
+          </div>
+        )}
+
+        {state.currentView === 'edit' && editingMemo && (
+          <div>
+            <h2 className="text-2xl font-bold text-gray-900 mb-6">メモを編集</h2>
+            <MemoForm
+              memo={editingMemo}
+              onSave={handleMemoSave}
+              onCancel={handleBackToList}
+              isEditing={true}
+            />
+          </div>
+        )}
+      </main>
+    </div>
   )
 }
 
