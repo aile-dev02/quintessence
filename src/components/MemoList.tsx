@@ -8,6 +8,8 @@ interface MemoListProps {
   onMemoDelete: (memo: Memo) => void
   selectedMemoId?: string
   searchQuery?: string
+  onSelectionChange?: (selectedMemos: Memo[]) => void
+  bulkSelectionMode?: boolean
 }
 
 interface SortOption {
@@ -48,7 +50,9 @@ export const MemoList: React.FC<MemoListProps> = ({
   onMemoEdit,
   onMemoDelete,
   selectedMemoId,
-  searchQuery = ''
+  searchQuery = '',
+  onSelectionChange,
+  bulkSelectionMode = false
 }) => {
   const [memos, setMemos] = useState<Memo[]>([])
   const [loading, setLoading] = useState(true)
@@ -57,6 +61,7 @@ export const MemoList: React.FC<MemoListProps> = ({
   const [sortOption, setSortOption] = useState<SortOption>({ field: 'updatedAt', direction: 'desc' })
   const [selectedTags, setSelectedTags] = useState<string[]>([])
   const [statusFilter, setStatusFilter] = useState<string>('all')
+  const [selectedMemoIds, setSelectedMemoIds] = useState<Set<string>>(new Set())
 
   const memoService = useMemo(() => MemoService.getInstance(), [])
 
@@ -80,6 +85,41 @@ export const MemoList: React.FC<MemoListProps> = ({
   useEffect(() => {
     loadMemos()
   }, [loadMemos])
+
+  // Selection handlers
+  const handleMemoSelection = useCallback((memoId: string, isSelected: boolean) => {
+    setSelectedMemoIds(prev => {
+      const newSet = new Set(prev)
+      if (isSelected) {
+        newSet.add(memoId)
+      } else {
+        newSet.delete(memoId)
+      }
+      
+      // Notify parent component
+      if (onSelectionChange) {
+        const selectedMemos = memos.filter(memo => newSet.has(memo.id))
+        onSelectionChange(selectedMemos)
+      }
+      
+      return newSet
+    })
+  }, [memos, onSelectionChange])
+
+  const handleSelectAll = useCallback((isSelected: boolean) => {
+    if (isSelected) {
+      const allMemoIds = new Set(memos.map(memo => memo.id))
+      setSelectedMemoIds(allMemoIds)
+      if (onSelectionChange) {
+        onSelectionChange(memos)
+      }
+    } else {
+      setSelectedMemoIds(new Set())
+      if (onSelectionChange) {
+        onSelectionChange([])
+      }
+    }
+  }, [memos, onSelectionChange])
 
   // Get all unique tags
   const allTags = useMemo(() => {

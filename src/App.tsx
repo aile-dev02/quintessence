@@ -1,14 +1,17 @@
 import { useState, useCallback, useEffect } from 'react'
-import { PlusIcon, Bars3Icon } from '@heroicons/react/24/outline'
+import { PlusIcon, Bars3Icon, MagnifyingGlassIcon, ChartBarIcon } from '@heroicons/react/24/outline'
 import { MemoForm } from './components/MemoForm'
 import { MemoList } from './components/MemoList'
 import { MemoDetail } from './components/MemoDetail'
 import { SearchAndFilterBar } from './components/SearchAndFilterBar'
+import { BulkActionsBar } from './components/BulkActionsBar'
+import { MemoStatsDashboard } from './components/MemoStatsDashboard'
 import { MemoService } from './services/MemoService'
 import { Memo } from './models/Memo'
+import type { MemoStatus, Priority } from './types'
 
 // View types for navigation
-type ViewType = 'list' | 'detail' | 'create' | 'edit'
+type ViewType = 'list' | 'detail' | 'create' | 'edit' | 'stats'
 
 interface AppState {
   currentView: ViewType
@@ -17,8 +20,10 @@ interface AppState {
   searchQuery: string
   memos: Memo[]
   filteredMemos: Memo[]
+  selectedMemos: Memo[]
   isLoading: boolean
   error: string | null
+  bulkProcessing: boolean
 }
 
 function App() {
@@ -29,8 +34,10 @@ function App() {
     searchQuery: '',
     memos: [],
     filteredMemos: [],
+    selectedMemos: [],
     isLoading: true,
-    error: null
+    error: null,
+    bulkProcessing: false
   })
 
   const loadMemos = useCallback(async () => {
