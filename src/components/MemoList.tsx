@@ -263,28 +263,6 @@ export const MemoList: React.FC<MemoListProps> = ({
             {searchQuery && ` (「${searchQuery}」で検索)`}
           </p>
         </div>
-        
-        {/* Sort controls */}
-        <div className="flex items-center space-x-2">
-          <label className="text-sm text-gray-700">並び順:</label>
-          <select
-            value={`${sortOption.field}-${sortOption.direction}`}
-            onChange={(e) => {
-              const [field, direction] = e.target.value.split('-') as [SortOption['field'], SortOption['direction']]
-              setSortOption({ field, direction })
-            }}
-            className="text-sm border border-gray-300 rounded px-2 py-1 focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            <option value="updatedAt-desc">更新日時 (新しい順)</option>
-            <option value="updatedAt-asc">更新日時 (古い順)</option>
-            <option value="createdAt-desc">作成日時 (新しい順)</option>
-            <option value="createdAt-asc">作成日時 (古い順)</option>
-            <option value="title-asc">タイトル (A-Z)</option>
-            <option value="title-desc">タイトル (Z-A)</option>
-            <option value="priority-desc">優先度 (高い順)</option>
-            <option value="priority-asc">優先度 (低い順)</option>
-          </select>
-        </div>
       </div>
 
       {/* Filters */}
