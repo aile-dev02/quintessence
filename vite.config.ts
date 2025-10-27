@@ -15,12 +15,26 @@ export default defineConfig({
         name: 'TestMemo QA Knowledge Tool',
         short_name: 'TestMemo',
         description: 'QA knowledge sharing and memo management',
-        theme_color: '#ffffff',
+        theme_color: '#3b82f6',
+        background_color: '#ffffff',
         icons: [
           {
-            src: '/icon-192.png',
+            src: '/icon.svg',
+            sizes: 'any',
+            type: 'image/svg+xml',
+            purpose: 'any'
+          },
+          {
+            src: '/icon.svg',
             sizes: '192x192',
-            type: 'image/png'
+            type: 'image/svg+xml',
+            purpose: 'maskable'
+          },
+          {
+            src: '/icon.svg',
+            sizes: '512x512',
+            type: 'image/svg+xml',
+            purpose: 'any maskable'
           }
         ]
       }

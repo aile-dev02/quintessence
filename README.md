@@ -1,4 +1,4 @@
-# TestMemo - QA Knowledge Management Tool
+# TestMemo - QA ナレッジ管理ツール
 
 [![Build Status](https://img.shields.io/badge/build-passing-brightgreen)](https://github.com/aile-dev02/quintessence)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5.9.3-blue)](https://www.typescriptlang.org/)
@@ -6,174 +6,154 @@
 [![Test Coverage](https://img.shields.io/badge/coverage-79%25-green)](./coverage/index.html)
 [![PWA Ready](https://img.shields.io/badge/PWA-Ready-purple)](https://web.dev/progressive-web-apps/)
 
-**TestMemo** is a modern, comprehensive memo and knowledge management application designed for QA teams and professionals. Built with React 19, TypeScript, and modern web technologies, it provides a powerful platform for organizing, searching, and sharing quality assurance knowledge.
+**TestMemo** は、QAチームや専門家向けに設計されたモダンで包括的なメモ・ナレッジ管理アプリケーションです。React 19、TypeScript等で構築され、品質保証に関するナレッジの整理、検索、共有のためのプラットフォームです。
 
-## 🚀 Features
+## 機能
 
-### Core Functionality
-- **📝 Rich Memo Management**: Create, edit, delete, and organize memos with rich text support
-- **🔍 Advanced Search**: Full-text search across titles, content, and tags with fuzzy matching
-- **🏷️ Smart Tagging System**: Organize memos with hierarchical tags and filtering
-- **📊 Priority Management**: Set priority levels (Low, Medium, High, Critical) for better organization
-- **📈 Status Tracking**: Track memo status (Draft, Published, Archived)
-- **📱 Responsive Design**: Fully responsive interface optimized for desktop, tablet, and mobile
+### 基本機能
+- **リッチメモ管理**: リッチテキスト対応でメモの作成、編集、削除、整理が可能
+- **高度な検索**: タイトル、コンテンツ、タグ全体でのファジーマッチング付き全文検索
+- **スマートタグシステム**: 階層的タグとフィルタリングでメモを整理
+- **優先度管理**: より良い整理のための優先度レベル設定（低、中、高、重要）
+- **ステータス追跡**: メモステータスの追跡（下書き、公開済み、アーカイブ済み）
+- **レスポンシブデザイン**: デスクトップ、タブレット、モバイルに最適化された完全レスポンシブインターフェース
 
-### Advanced Features
-- **💾 Persistent Storage**: Local storage with IndexedDB support for offline capabilities
-- **🔄 Real-time Updates**: Instant updates and synchronization across components
-- **🌐 PWA Support**: Progressive Web App with offline functionality
-- **♿ Accessibility**: WCAG 2.1 AA compliant with full keyboard navigation
+### 高度な機能
+- **永続ストレージ**: オフライン機能のためのIndexedDBサポート付きローカルストレージ
+- **リアルタイム更新**: コンポーネント間での即座の更新と同期
+- **PWAサポート**: オフライン機能付きプログレッシブWebアプリ
+- **アクセシビリティ**: 完全なキーボードナビゲーション付きWCAG 2.1 AA準拠
 
-### Technical Highlights
-- **⚡ High Performance**: Optimized bundle size (113.81 kB gzipped)
-- **🧪 Comprehensive Testing**: 79% code coverage with 47+ unit tests
-- **📚 TypeScript**: Full type safety and excellent developer experience
-- **🎨 Modern UI**: Tailwind CSS with clean, professional design
+## 技術スタック
 
-## 🛠️ Tech Stack
+### フロントエンド
+- **React 19.1.1**
+- **TypeScript 5.9.3**
+- **Tailwind CSS 4.1.16**
+- **Heroicons 2.2.0**
 
-### Frontend
-- **React 19.1.1** - Latest React with modern hooks and concurrent features
-- **TypeScript 5.9.3** - Full type safety and enhanced developer experience
-- **Tailwind CSS 4.1.16** - Utility-first CSS framework for rapid UI development
-- **Heroicons 2.2.0** - Beautiful hand-crafted SVG icons
+### ステート管理とデータ
+- **カスタムフック** - ステート管理とデータフェッチング用のReactフック
+- **IndexedDB/Dexie 4.2.1** - 永続ストレージ用のクライアントサイドデータベース
+- **Fuse.js 7.1.0** - 強力なファジー検索機能
 
-### State Management & Data
-- **Custom Hooks** - React hooks for state management and data fetching
-- **IndexedDB/Dexie 4.2.1** - Client-side database for persistent storage
-- **Fuse.js 7.1.0** - Powerful fuzzy search functionality
+### 開発とテスト
+- **Vite 7.1.7**
+- **Vitest 4.0.2**
+- **Playwright 1.56.1**
+- **ESLint 9.36.0**
 
-### Development & Testing
-- **Vite 7.1.7** - Next generation frontend tooling
-- **Vitest 4.0.2** - Fast unit testing framework
-- **Playwright 1.56.1** - End-to-end testing framework
-- **ESLint 9.36.0** - Code linting and quality assurance
+##  インストール
 
-## 📦 Installation
 
-### Prerequisites
-- **Node.js 18+** (recommended: 20 LTS)
-- **npm 9+** or **yarn 3+**
 
-### Quick Start
+### クイックスタート
 
 ```bash
-# Clone the repository
+# リポジトリをクローン
 git clone https://github.com/aile-dev02/quintessence.git
 cd quintessence
 
-# Install dependencies
+# 依存関係をインストール
 npm install
 
-# Start development server
+# 開発サーバーを起動
 npm run dev
 
-# Open browser to http://localhost:5173
+# ブラウザで http://localhost:5173 を開く
 ```
 
-### Development Commands
+### 開発コマンド
 
 ```bash
-# Development
-npm run dev          # Start development server with HMR
-npm run build        # Build for production
-npm run preview      # Preview production build locally
+# 開発
+npm run dev          # HMR付き開発サーバーを起動
+npm run build        # 本番用ビルド
+npm run preview      # 本番ビルドをローカルでプレビュー
 
-# Testing
-npm run test         # Run unit tests
-npm run test:coverage # Generate coverage report
-npm run test:e2e     # Run end-to-end tests
+# テスト
+npm run test         # ユニットテストを実行
+npm run test:coverage # カバレッジレポートを生成
+npm run test:e2e     # エンドツーエンドテストを実行
 
-# Code Quality
-npm run lint         # Run ESLint
+# コード品質
+npm run lint         # ESLintを実行
 ```
 
-## 🏗️ Project Structure
+##  プロジェクト構造
 
 ```
 src/
-├── components/          # React components
-│   ├── MemoForm.tsx    # Memo creation/editing form
-│   ├── MemoList.tsx    # Memo listing with filtering
-│   ├── MemoDetail.tsx  # Individual memo display
-│   └── SearchAndFilterBar.tsx # Search and filter controls
-├── models/             # Business logic and data models
-│   └── Memo.ts         # Core memo model with validation
-├── services/           # Data access and business services
-│   ├── MemoService.ts  # Main service for memo operations
-│   └── storage/        # Storage abstraction layer
-├── types/              # TypeScript type definitions
-├── utils/              # Utility functions and helpers
-├── App.tsx             # Main application component
-└── main.tsx            # Application entry point
+├── components/          # Reactコンポーネント
+│   ├── MemoForm.tsx    # メモ作成/編集フォーム
+│   ├── MemoList.tsx    # フィルタリング付きメモ一覧
+│   ├── MemoDetail.tsx  # 個別メモ表示
+│   └── SearchAndFilterBar.tsx # 検索とフィルターコントロール
+├── models/             # ビジネスロジックとデータモデル
+│   └── Memo.ts         # バリデーション付きコアメモモデル
+├── services/           # データアクセスとビジネスサービス
+│   ├── MemoService.ts  # メモ操作のメインサービス
+│   └── storage/        # ストレージ抽象化レイヤー
+├── types/              # TypeScript型定義
+├── utils/              # ユーティリティ関数とヘルパー
+├── App.tsx             # メインアプリケーションコンポーネント
+└── main.tsx            # アプリケーションエントリーポイント
 
 tests/
-├── models/             # Unit tests for models
-├── services/           # Unit tests for services
-└── e2e/                # End-to-end tests
+├── models/             # モデルのユニットテスト
+├── services/           # サービスのユニットテスト
+└── e2e/                # エンドツーエンドテスト
 ```
 
-## 🧪 Testing Strategy
+##  テスト戦略
 
-### Unit Testing (47+ tests, 79% coverage)
-- **Memo Model**: 35 tests covering validation, CRUD operations, search functionality
-- **MemoService**: 12 tests covering service layer and business logic
-- **Mock Infrastructure**: Complete isolation with localStorage and IndexedDB mocks
+### ユニットテスト（47以上のテスト、79%カバレッジ）
+- **メモモデル**: バリデーション、CRUD操作、検索機能をカバーする35のテスト
+- **メモサービス**: サービス層とビジネスロジックをカバーする12のテスト
+- **モックインフラストラクチャ**: localStorageとIndexedDBモックによる完全な分離
 
-### Coverage Reports
-- **HTML Reports**: Available at `coverage/index.html`
-- **Console Output**: Detailed statement, branch, and function coverage
+### カバレッジレポート
+- **HTMLレポート**: `coverage/index.html` で利用可能
+- **コンソール出力**: 詳細なステートメント、ブランチ、関数カバレッジ
 
-## 🚀 Deployment
+##  デプロイ
 
-### Production Build
+### 本番ビルド
 
 ```bash
-# Create optimized production build
+# 最適化された本番ビルドを作成
 npm run build
 
-# The dist/ folder contains all deployment files
+# dist/ フォルダにすべてのデプロイファイルが含まれます
 ```
 
-### Deployment Options
-- **Netlify**: Drag `dist/` folder for instant deployment
-- **Vercel**: Connect GitHub repository for automatic deployments
-- **GitHub Pages**: Use for static hosting
-- **AWS S3 + CloudFront**: For enterprise deployment
+### デプロイオプション
+- **Netlify**: 即座にデプロイするため `dist/` フォルダをドラッグ
+- **Vercel**: 自動デプロイのためGitHubリポジトリを接続
+- **GitHub Pages**: 静的ホスティングに使用
+- **AWS S3 + CloudFront**: エンタープライズデプロイメント用
 
-## 🤝 Contributing
+##  コントリビューション
 
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Commit your changes (`git commit -m 'Add amazing feature'`)
-4. Push to the branch (`git push origin feature/amazing-feature`)
-5. Open a Pull Request
+1. リポジトリをフォーク
+2. 機能ブランチを作成（`git checkout -b feature/amazing-feature`）
+3. 変更をコミット（`git commit -m 'Add amazing feature'`）
+4. ブランチにプッシュ（`git push origin feature/amazing-feature`）
+5. プルリクエストを開く
 
-### Development Guidelines
-- Follow TypeScript strict mode
-- Maintain test coverage above 80%
-- Follow accessibility best practices
-- Use semantic commit messages
+### 開発ガイドライン
+- TypeScriptストリクトモードに従う
+- テストカバレッジを80%以上に維持
+- アクセシビリティのベストプラクティスに従う
+- セマンティックコミットメッセージを使用
 
-## 📊 Performance Metrics
+##  パフォーマンス指標
 
-- **Bundle Size**: 113.81 kB (gzipped)
-- **Test Coverage**: 79% (models), 45% (overall)
-- **Lighthouse Score**: 95+ across all categories
-- **PWA Ready**: Service worker and offline support
-
-## 📄 License
-
-This project is licensed under the MIT License.
-
-## 🙋 Support
-
-For questions, issues, or contributions:
-- **GitHub Issues**: [Report bugs or request features](https://github.com/aile-dev02/quintessence/issues)
-- **Documentation**: Check inline code comments and this README
+- **バンドルサイズ**: 113.81 kB（gzip圧縮）
+- **テストカバレッジ**: 79%（モデル）、45%（全体）
+- **Lighthouseスコア**: 全カテゴリで95以上
+- **PWA対応**: サービスワーカーとオフラインサポート
 
 ---
 
-**TestMemo** - Empowering QA teams with efficient knowledge management. Built with ❤️ using modern web technologies.
-
-*Last Updated: October 27, 2025*
+*最終更新: 2025年10月27日*
