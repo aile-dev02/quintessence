@@ -92,7 +92,8 @@ export const MemoForm: React.FC<MemoFormProps> = ({
           title: formData.title,
           body: formData.body,
           tags: formData.tags,
-          projectId: formData.projectId || undefined
+          projectId: formData.projectId || undefined,
+          priority: formData.priority
         })
       } else {
         // Create new memo
@@ -100,7 +101,8 @@ export const MemoForm: React.FC<MemoFormProps> = ({
           title: formData.title,
           body: formData.body,
           tags: formData.tags,
-          projectId: formData.projectId || undefined
+          projectId: formData.projectId || undefined,
+          priority: formData.priority
         })
       }
 

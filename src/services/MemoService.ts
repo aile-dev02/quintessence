@@ -8,6 +8,7 @@ import type {
 import { Memo } from '../models/Memo'
 import { LocalStorageService } from './storage/LocalStorageService'
 import { IndexedDBService } from './storage/IndexedDBService'
+import { FirebaseService, type SyncStatus } from './FirebaseService'
 import { ValidationError, StorageError } from '../utils/errors'
 
 export class MemoService {
@@ -16,10 +17,14 @@ export class MemoService {
   
   private localStorageService: LocalStorageService
   private indexedDBService: IndexedDBService
+  private firebaseService: FirebaseService
+  private useFirebase: boolean = true // Firebase同期を使用するかどうか
 
   private constructor() {
     this.localStorageService = LocalStorageService.getInstance()
     this.indexedDBService = IndexedDBService.getInstance()
+    this.firebaseService = FirebaseService.getInstance()
+    this.initializeFirebaseSync()
   }
 
   static getInstance(): MemoService {
@@ -27,6 +32,41 @@ export class MemoService {
       MemoService.instance = new MemoService()
     }
     return MemoService.instance
+  }
+
+  /**
+   * Firebase同期を初期化
+   */
+  private initializeFirebaseSync(): void {
+    if (!this.useFirebase) return
+
+    try {
+      // リアルタイム同期を開始
+      this.firebaseService.startRealtimeSync()
+      console.log('Firebase リアルタイム同期を開始しました')
+    } catch (error) {
+      console.warn('Firebase 同期の初期化に失敗しました:', error)
+      this.useFirebase = false
+    }
+  }
+
+  /**
+   * 同期ステータスを取得
+   */
+  getSyncStatus(): SyncStatus {
+    return this.firebaseService.getStatus()
+  }
+
+  /**
+   * Firebase同期の有効/無効を切り替え
+   */
+  setFirebaseSync(enabled: boolean): void {
+    this.useFirebase = enabled
+    if (enabled) {
+      this.firebaseService.startRealtimeSync()
+    } else {
+      this.firebaseService.stopRealtimeSync()
+    }
   }
 
   /**
@@ -39,10 +79,10 @@ export class MemoService {
         body: request.body,
         tags: request.tags || [],
         projectId: request.projectId,
-        priority: 'medium'
+        priority: request.priority || 'medium'
       })
 
-      // Store memo in LocalStorage
+      // Store memo in LocalStorage (immediate backup)
       this.storeMemo(memo)
       
       // Update search index for IndexedDB
@@ -50,6 +90,17 @@ export class MemoService {
         await this.indexedDBService.updateSearchIndex(memo)
       } catch (error) {
         console.warn('Search index update failed:', error)
+      }
+
+      // Sync to Firebase if online
+      if (this.useFirebase && this.firebaseService.isOnline()) {
+        try {
+          const firebaseId = await this.firebaseService.createMemo(memo.toJSON())
+          console.log('Firebase sync successful:', firebaseId)
+        } catch (error) {
+          console.warn('Firebase sync failed:', error)
+          // ローカル保存は成功しているので、エラーは投げない
+        }
       }
 
       return memo
@@ -95,6 +146,38 @@ export class MemoService {
   }
 
   /**
+   * Firebase からメモを同期して取得
+   */
+  async syncFromFirebase(): Promise<Memo[]> {
+    if (!this.useFirebase || !this.firebaseService.isOnline()) {
+      return this.getAllMemos()
+    }
+
+    try {
+      const firebaseMemos = await this.firebaseService.getAllMemos()
+      
+      // Firebaseのデータをローカルストレージに保存
+      const memoInterfaces = firebaseMemos.map(memo => memo.toJSON())
+      this.localStorageService.set(MemoService.STORAGE_KEY, memoInterfaces)
+
+      // 検索インデックスも更新
+      for (const memo of firebaseMemos) {
+        try {
+          await this.indexedDBService.updateSearchIndex(memo)
+        } catch (error) {
+          console.warn('Search index update failed for memo:', memo.id, error)
+        }
+      }
+
+      console.log(`Firebase から ${firebaseMemos.length} 件のメモを同期しました`)
+      return firebaseMemos
+    } catch (error) {
+      console.warn('Firebase 同期に失敗しました:', error)
+      return this.getAllMemos() // フォールバックとしてローカルデータを返す
+    }
+  }
+
+  /**
    * Update an existing memo
    */
   async updateMemo(id: string, request: UpdateMemoRequest): Promise<Memo> {
@@ -108,15 +191,27 @@ export class MemoService {
         title: request.title,
         body: request.body,
         tags: request.tags,
-        projectId: request.projectId
+        projectId: request.projectId,
+        priority: request.priority
       })
 
+      // Store memo in LocalStorage (immediate backup)
       this.storeMemo(memo)
       
       try {
         await this.indexedDBService.updateSearchIndex(memo)
       } catch (error) {
         console.warn('Search index update failed:', error)
+      }
+
+      // Sync to Firebase if online
+      if (this.useFirebase && this.firebaseService.isOnline()) {
+        try {
+          await this.firebaseService.updateMemo(id, memo.toJSON())
+          console.log('Firebase update successful')
+        } catch (error) {
+          console.warn('Firebase update failed:', error)
+        }
       }
 
       return memo
@@ -143,6 +238,16 @@ export class MemoService {
         await this.indexedDBService.removeFromSearchIndex(id)
       } catch (error) {
         console.warn('Search index removal failed:', error)
+      }
+
+      // Sync to Firebase if online
+      if (this.useFirebase && this.firebaseService.isOnline()) {
+        try {
+          await this.firebaseService.deleteMemo(id)
+          console.log('Firebase delete successful')
+        } catch (error) {
+          console.warn('Firebase delete failed:', error)
+        }
       }
     } catch (error) {
       throw new StorageError('メモの削除に失敗しました', 'DELETE_FAILED', { id, error })

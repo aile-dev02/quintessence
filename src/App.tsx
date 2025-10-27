@@ -4,8 +4,11 @@ import { MemoForm } from './components/MemoForm'
 import { MemoList } from './components/MemoList'
 import { MemoDetail } from './components/MemoDetail'
 import { SearchAndFilterBar } from './components/SearchAndFilterBar'
+import { SyncStatusBar } from './components/SyncStatusBar'
 import { MemoService } from './services/MemoService'
 import { Memo } from './models/Memo'
+import { useSync } from './hooks/useSync'
+import { initializeFirebase } from './config/firebase'
 
 // View types for navigation
 type ViewType = 'list' | 'detail' | 'create' | 'edit' | 'stats'
@@ -37,11 +40,37 @@ function App() {
     bulkProcessing: false
   })
 
+  // 同期フックを使用
+  const { syncState, syncNow, clearError } = useSync()
+
+  // Firebase初期化
+  useEffect(() => {
+    try {
+      initializeFirebase()
+      console.log('Firebase が初期化されました')
+    } catch (error) {
+      console.error('Firebase 初期化エラー:', error)
+    }
+  }, [])
+
   const loadMemos = useCallback(async () => {
     try {
       setState(prev => ({ ...prev, isLoading: true, error: null }))
       const memoService = MemoService.getInstance()
-      const memos = memoService.getAllMemos()
+      
+      // Firebase からの同期を試行（オンラインの場合）
+      let memos: Memo[]
+      if (syncState.status.isOnline) {
+        try {
+          memos = await memoService.syncFromFirebase()
+        } catch (error) {
+          console.warn('Firebase同期に失敗、ローカルデータを使用:', error)
+          memos = memoService.getAllMemos()
+        }
+      } else {
+        memos = memoService.getAllMemos()
+      }
+      
       setState(prev => ({ ...prev, memos, filteredMemos: memos, isLoading: false }))
     } catch (error) {
       setState(prev => ({ 
@@ -50,7 +79,7 @@ function App() {
         isLoading: false 
       }))
     }
-  }, [])
+  }, [syncState.status.isOnline])
 
   // Load memos on component mount
   useEffect(() => {
@@ -174,6 +203,22 @@ function App() {
               <h1 className="text-xl font-semibold text-gray-900">TestMemo</h1>
             </div>
             
+            {/* Sync Status */}
+            <div className="flex items-center space-x-4">
+              <SyncStatusBar
+                syncState={syncState}
+                onSyncNow={async () => {
+                  try {
+                    await syncNow()
+                    await loadMemos() // UIを更新
+                  } catch (error) {
+                    console.error('同期エラー:', error)
+                  }
+                }}
+                onClearError={clearError}
+              />
+            </div>
+            
             {/* Header actions based on current view */}
             <div className="flex items-center space-x-4">
               {state.currentView === 'list' && (
@@ -199,6 +244,28 @@ function App() {
             </div>
           </div>
         </div>
+
+        {/* 同期エラーメッセージ */}
+        {syncState.error && (
+          <div className="bg-red-50 border-b border-red-200">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-2">
+              <div className="flex items-center justify-between">
+                <div className="flex items-center">
+                  <div className="text-sm text-red-700">
+                    同期エラー: {syncState.error}
+                  </div>
+                </div>
+                <button
+                  onClick={clearError}
+                  className="text-red-400 hover:text-red-600 focus:outline-none focus:ring-2 focus:ring-red-500"
+                  aria-label="エラーメッセージを閉じる"
+                >
+                  ×
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </header>
 
       {/* Main content */}

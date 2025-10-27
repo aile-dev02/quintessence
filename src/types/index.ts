@@ -60,6 +60,7 @@ export interface CreateMemoRequest {
   body: string
   tags?: string[]
   projectId?: string
+  priority?: Priority
 }
 
 export interface UpdateMemoRequest {
@@ -67,6 +68,7 @@ export interface UpdateMemoRequest {
   body?: string
   tags?: string[]
   projectId?: string
+  priority?: Priority
 }
 
 export interface MemoFilters {

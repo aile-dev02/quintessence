@@ -20,6 +20,7 @@
     "@heroicons/react": "^2.2.0",
     "dexie": "^4.2.1",
     "file-saver": "^2.0.5",
+    "firebase": "^12.4.0",
     "fuse.js": "^7.1.0",
     "marked": "^16.4.1",
     "react": "^19.1.1",
