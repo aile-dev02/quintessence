@@ -5,11 +5,26 @@ import type { Firestore } from 'firebase/firestore'
 
 // Firebase設定の有効性をチェック
 const isFirebaseConfigured = (): boolean => {
-  return !!(
-    import.meta.env.VITE_FIREBASE_PROJECT_ID &&
-    import.meta.env.VITE_FIREBASE_API_KEY &&
-    import.meta.env.VITE_FIREBASE_PROJECT_ID !== "quintessence-testmemo"
+  const projectId = import.meta.env.VITE_FIREBASE_PROJECT_ID
+  const apiKey = import.meta.env.VITE_FIREBASE_API_KEY
+  
+  console.log('Firebase設定チェック:', {
+    projectId: projectId || '未設定',
+    apiKey: apiKey ? '設定済み' : '未設定',
+    isDevelopment: import.meta.env.DEV,
+    isProduction: import.meta.env.PROD
+  })
+  
+  const isConfigured = !!(
+    projectId &&
+    apiKey &&
+    projectId !== "testmemo-demo" &&
+    projectId !== "quintessence-testmemo" &&
+    apiKey !== "AIzaSyCLiw_GqsdLqpgwgaxY1sxrTLfIWAjJYEs"
   )
+  
+  console.log('Firebase設定状態:', isConfigured ? '有効' : '無効')
+  return isConfigured
 }
 
 // Firebase configuration - 本番環境では環境変数が必須
@@ -21,7 +36,7 @@ const firebaseConfig = {
   messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || "751542222090",
   appId: import.meta.env.VITE_FIREBASE_APP_ID || "1:751542222090:web:42c3d5bdd5d963740b4ef3"
 }
-
+  
 // 開発環境では Firestore エミュレータを使用
 const isDevelopment = import.meta.env.DEV
 const useEmulator = isDevelopment && import.meta.env.VITE_USE_FIREBASE_EMULATOR === 'true'
@@ -36,7 +51,14 @@ export function initializeFirebase(): { app: FirebaseApp; db: Firestore } {
 
   // Firebase設定の検証
   if (!isFirebaseConfigured()) {
+    console.warn('Firebase設定が無効です。ローカルストレージモードで動作します。')
     throw new Error('Firebase設定が不完全です。環境変数を設定してください。')
+  }
+
+  // 空の設定値をチェック
+  if (!firebaseConfig.projectId || !firebaseConfig.apiKey) {
+    console.warn('Firebase設定値が空です。ローカルストレージモードで動作します。')
+    throw new Error('Firebase設定値が空です。')
   }
 
   try {
