@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect } from 'react'
-import { PlusIcon, Bars3Icon } from '@heroicons/react/24/outline'
+import { PlusIcon } from '@heroicons/react/24/outline'
 import { MemoForm } from './components/MemoForm'
 import { MemoList } from './components/MemoList'
 import { MemoDetail } from './components/MemoDetail'
@@ -159,7 +159,6 @@ function App() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
-              <Bars3Icon className="h-6 w-6 text-gray-500 mr-3" aria-hidden="true" />
               <h1 className="text-xl font-semibold text-gray-900">TestMemo</h1>
             </div>
             
