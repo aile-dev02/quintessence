@@ -10,18 +10,17 @@ const isFirebaseConfigured = (): boolean => {
   
   console.log('Firebase設定チェック:', {
     projectId: projectId || '未設定',
-    apiKey: apiKey ? '設定済み' : '未設定',
+    apiKey: apiKey ? `設定済み(${apiKey.substring(0, 10)}...)` : '未設定',
     isDevelopment: import.meta.env.DEV,
-    isProduction: import.meta.env.PROD
+    isProduction: import.meta.env.PROD,
+    allEnvVars: Object.keys(import.meta.env).filter(key => key.startsWith('VITE_FIREBASE'))
   })
   
   const isConfigured = !!(
     projectId &&
     apiKey &&
     projectId !== "testmemo-demo" &&
-    projectId !== "quintessence-testmemo" &&
-    apiKey !== "demo-api-key" &&
-    apiKey !== "AIzaSyCLiw_GqsdLqpgwgaxY1sxrTLfIWAjJYEs"
+    apiKey !== "demo-api-key"
   )
   
   console.log('Firebase設定状態:', isConfigured ? '有効' : '無効')
@@ -63,12 +62,15 @@ export function initializeFirebase(): { app: FirebaseApp; db: Firestore } {
   }
 
   try {
+    console.log('Firebase初期化開始:', firebaseConfig)
 
     // Firebase アプリを初期化
     app = initializeApp(firebaseConfig)
+    console.log('Firebase App初期化完了')
     
     // Firestore を初期化
     db = getFirestore(app)
+    console.log('Firestore初期化完了')
     
     // 開発環境でエミュレータを使用する場合
     if (useEmulator) {
