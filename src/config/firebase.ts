@@ -5,8 +5,8 @@ import type { Firestore } from 'firebase/firestore'
 
 // Firebase設定の有効性をチェック
 const isFirebaseConfigured = (): boolean => {
-  const projectId = import.meta.env.VITE_FIREBASE_PROJECT_ID
-  const apiKey = import.meta.env.VITE_FIREBASE_API_KEY
+  const projectId = import.meta.env.VITE_FIREBASE_PROJECT_ID="quintessence-testmemo"
+  const apiKey = import.meta.env.VITE_FIREBASE_API_KEY="AIzaSyCLiw_GqsdLqpgwgaxY1sxrTLfIWAjJYEs"
   
   console.log('Firebase設定チェック:', {
     projectId: projectId || '未設定',
@@ -18,7 +18,6 @@ const isFirebaseConfigured = (): boolean => {
   const isConfigured = !!(
     projectId &&
     apiKey &&
-    projectId !== "testmemo-demo" &&
     projectId !== "quintessence-testmemo" &&
     apiKey !== "AIzaSyCLiw_GqsdLqpgwgaxY1sxrTLfIWAjJYEs"
   )
