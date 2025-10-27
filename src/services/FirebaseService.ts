@@ -35,7 +35,7 @@ export interface FirebaseServiceEvents {
 
 export class FirebaseService {
   private static instance: FirebaseService
-  private db = getFirebaseDb()
+  private db: any = null
   private readonly COLLECTION_NAME = 'memos'
   private unsubscribeCallbacks: Unsubscribe[] = []
   private eventListeners: Partial<FirebaseServiceEvents> = {}
@@ -47,6 +47,10 @@ export class FirebaseService {
   }
 
   private constructor() {
+    this.db = getFirebaseDb()
+    if (!this.db) {
+      throw new Error('Firebase設定が無効です。環境変数を確認してください。')
+    }
     this.initializeNetworkListeners()
   }
 

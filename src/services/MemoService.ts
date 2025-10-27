@@ -10,6 +10,7 @@ import { LocalStorageService } from './storage/LocalStorageService'
 import { IndexedDBService } from './storage/IndexedDBService'
 import { FirebaseService, type SyncStatus } from './FirebaseService'
 import { ValidationError, StorageError } from '../utils/errors'
+import { isFirebaseConfigured } from '../config/firebase'
 
 export class MemoService {
   private static readonly STORAGE_KEY = 'memos'
@@ -24,20 +25,14 @@ export class MemoService {
     this.localStorageService = LocalStorageService.getInstance()
     this.indexedDBService = IndexedDBService.getInstance()
     
-    // 本番環境または環境変数でFirebaseプロジェクトIDが設定されている場合にFirebaseを初期化
-    const hasFirebaseConfig = import.meta.env.VITE_FIREBASE_PROJECT_ID && 
-                             import.meta.env.VITE_FIREBASE_PROJECT_ID !== "testmemo-demo"
-    const isProduction = import.meta.env.PROD
-    
-    if (hasFirebaseConfig || isProduction) {
+    // Firebase設定が有効な場合のみ初期化
+    if (isFirebaseConfigured()) {
       this.useFirebase = true
       try {
         this.firebaseService = FirebaseService.getInstance()
         this.initializeFirebaseSync()
         console.log('Firebase同期が有効化されました:', {
-          projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
-          isProduction,
-          hasFirebaseConfig
+          projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID
         })
       } catch (error) {
         console.warn('Firebase初期化に失敗しました:', error)
@@ -45,7 +40,11 @@ export class MemoService {
         this.firebaseService = null
       }
     } else {
-      console.log('開発環境: Firebaseを無効化しました（ローカルストレージのみ使用）')
+      console.log('Firebase設定が無効です（ローカルストレージのみ使用）')
+      console.log('本番環境でFirebaseを使用するには、環境変数を設定してください：')
+      console.log('- VITE_FIREBASE_PROJECT_ID')
+      console.log('- VITE_FIREBASE_API_KEY')
+      console.log('- VITE_FIREBASE_AUTH_DOMAIN')
     }
   }
 

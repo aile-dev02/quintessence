@@ -45,22 +45,32 @@ service cloud.firestore {
 }
 ```
 
-### 5. Configure Vercel Environment Variables
+### 5. Configure Environment Variables
+
+#### For Vercel Deployment:
 
 In your Vercel dashboard:
 
 1. Go to your project → Settings → Environment Variables
-2. Add these variables:
+2. Add these variables with your **actual Firebase project values**:
 
 | Variable Name | Value | Environment |
 |---------------|-------|-------------|
-| `VITE_FIREBASE_PROJECT_ID` | your-project-id | Production |
-| `VITE_FIREBASE_API_KEY` | your-api-key | Production |
-| `VITE_FIREBASE_AUTH_DOMAIN` | your-project-id.firebaseapp.com | Production |
-| `VITE_FIREBASE_STORAGE_BUCKET` | your-project-id.appspot.com | Production |
-| `VITE_FIREBASE_MESSAGING_SENDER_ID` | 123456789 | Production |
-| `VITE_FIREBASE_APP_ID` | 1:123456789:web:abcdef | Production |
+| `VITE_FIREBASE_PROJECT_ID` | your-actual-project-id | Production |
+| `VITE_FIREBASE_API_KEY` | your-actual-api-key | Production |
+| `VITE_FIREBASE_AUTH_DOMAIN` | your-actual-project-id.firebaseapp.com | Production |
+| `VITE_FIREBASE_STORAGE_BUCKET` | your-actual-project-id.appspot.com | Production |
+| `VITE_FIREBASE_MESSAGING_SENDER_ID` | your-actual-messaging-sender-id | Production |
+| `VITE_FIREBASE_APP_ID` | your-actual-app-id | Production |
 | `VITE_USE_FIREBASE_EMULATOR` | false | Production |
+
+#### For Local Production Testing:
+
+1. Copy `.env.production.example` to `.env.production`
+2. Fill in your actual Firebase project values
+3. Test with: `npm run build && npm run preview`
+
+**⚠️ Important**: Never use `testmemo-demo` values in production. This will cause connection errors.
 
 ### 6. Deploy to Vercel
 
@@ -142,15 +152,26 @@ VITE_USE_FIREBASE_EMULATOR=true npm run dev
 
 ### Common Issues
 
-**Firebase not initializing**:
-- Check environment variables are set correctly
-- Verify Firebase project exists and is active
-- Check browser console for detailed error messages
+**`testmemo-demo` connection errors in production**:
+- **Cause**: Using demo/fallback Firebase config in production
+- **Solution**: Set proper environment variables with your actual Firebase project values
+- **Check**: Ensure `VITE_FIREBASE_PROJECT_ID` and `VITE_FIREBASE_API_KEY` are set
 
-**Permission denied errors**:
-- Verify Firestore security rules
-- Check if authentication is required but not implemented
-- Test with more permissive rules first
+**Firebase not initializing**:
+- Check environment variables are set correctly in Vercel dashboard
+- Verify Firebase project exists and is active  
+- Check browser console for detailed error messages
+- Ensure all required environment variables are set (not just some)
+
+**Permission denied (401) errors**:
+- Check if your Firebase API key is correct
+- Verify your Firebase project ID matches the one in Firebase Console
+- Ensure the web app is properly configured in Firebase project settings
+
+**Bad Request (400) errors**:
+- Usually indicates incorrect Firebase configuration
+- Double-check all environment variable values
+- Make sure you're not using demo values in production
 
 **Real-time updates not working**:
 - Check network connectivity
@@ -160,8 +181,11 @@ VITE_USE_FIREBASE_EMULATOR=true npm run dev
 ### Debugging Commands
 
 ```bash
-# Check environment variables
+# Check environment variables (local)
 echo $VITE_FIREBASE_PROJECT_ID
+
+# Check Vercel environment variables
+vercel env ls
 
 # Test Firebase connection
 firebase projects:list
@@ -169,6 +193,28 @@ firebase projects:list
 # Check Firestore rules
 firebase firestore:rules:get
 ```
+
+## 🚨 Emergency Fix for Production
+
+If your production site is currently broken due to Firebase errors:
+
+### Quick Fix Steps:
+
+1. **Immediately disable Firebase** by setting this in Vercel:
+   ```
+   VITE_FIREBASE_PROJECT_ID = (leave empty or delete)
+   ```
+
+2. **Or remove all Firebase environment variables** temporarily
+
+3. **Redeploy** - the app will run in local-storage-only mode
+
+4. **Then properly configure Firebase** using the steps above
+
+### Verify Fix:
+- Check browser console - no more `testmemo-demo` or Firebase errors
+- App should work with local storage only
+- Memos are saved locally in browser
 
 ## 📊 Monitoring & Analytics
 

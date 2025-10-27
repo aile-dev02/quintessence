@@ -3,20 +3,28 @@ import { getFirestore, connectFirestoreEmulator } from 'firebase/firestore'
 import type { FirebaseApp } from 'firebase/app'
 import type { Firestore } from 'firebase/firestore'
 
-// Firebase configuration
-const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "demo-api-key",
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || "testmemo-demo.firebaseapp.com",
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || "testmemo-demo",
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || "testmemo-demo.appspot.com",
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || "123456789",
-  appId: import.meta.env.VITE_FIREBASE_APP_ID || "1:123456789:web:abcdef123456"
+// Firebase設定の有効性をチェック
+const isFirebaseConfigured = (): boolean => {
+  return !!(
+    import.meta.env.VITE_FIREBASE_PROJECT_ID &&
+    import.meta.env.VITE_FIREBASE_API_KEY &&
+    import.meta.env.VITE_FIREBASE_PROJECT_ID !== "quintessence-testmemo"
+  )
 }
 
-// デモ用の設定（実際のFirebaseプロジェクトを作成する場合は上記の値を置き換えてください）
+// Firebase configuration - 本番環境では環境変数が必須
+const firebaseConfig = {
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "AIzaSyCLiw_GqsdLqpgwgaxY1sxrTLfIWAjJYEs",
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || "quintessence-testmemo.firebaseapp.com",
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || "quintessence-testmemo",
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || "quintessence-testmemo.firebasestorage.app",
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || "751542222090",
+  appId: import.meta.env.VITE_FIREBASE_APP_ID || "1:751542222090:web:42c3d5bdd5d963740b4ef3"
+}
+
 // 開発環境では Firestore エミュレータを使用
 const isDevelopment = import.meta.env.DEV
-const useEmulator = isDevelopment && import.meta.env.VITE_USE_FIREBASE_EMULATOR !== 'false'
+const useEmulator = isDevelopment && import.meta.env.VITE_USE_FIREBASE_EMULATOR === 'true'
 
 let app: FirebaseApp | null = null
 let db: Firestore | null = null
@@ -26,11 +34,12 @@ export function initializeFirebase(): { app: FirebaseApp; db: Firestore } {
     return { app, db }
   }
 
+  // Firebase設定の検証
+  if (!isFirebaseConfigured()) {
+    throw new Error('Firebase設定が不完全です。環境変数を設定してください。')
+  }
+
   try {
-    // Firebase設定を検証
-    if (!firebaseConfig.projectId || firebaseConfig.projectId === "testmemo-demo") {
-      throw new Error('有効なFirebaseプロジェクトIDが設定されていません')
-    }
 
     // Firebase アプリを初期化
     app = initializeApp(firebaseConfig)
@@ -60,18 +69,39 @@ export function initializeFirebase(): { app: FirebaseApp; db: Firestore } {
   }
 }
 
-export function getFirebaseApp(): FirebaseApp {
+export function getFirebaseApp(): FirebaseApp | null {
+  if (!isFirebaseConfigured()) {
+    return null
+  }
+  
   if (!app) {
-    const { app: initializedApp } = initializeFirebase()
-    return initializedApp
+    try {
+      const { app: initializedApp } = initializeFirebase()
+      return initializedApp
+    } catch (error) {
+      console.error('Firebase初期化エラー:', error)
+      return null
+    }
   }
   return app
 }
 
-export function getFirebaseDb(): Firestore {
+export function getFirebaseDb(): Firestore | null {
+  if (!isFirebaseConfigured()) {
+    return null
+  }
+  
   if (!db) {
-    const { db: initializedDb } = initializeFirebase()
-    return initializedDb
+    try {
+      const { db: initializedDb } = initializeFirebase()
+      return initializedDb
+    } catch (error) {
+      console.error('Firebase初期化エラー:', error)
+      return null
+    }
   }
   return db
 }
+
+// Firebase設定の有効性をチェックする関数をエクスポート
+export { isFirebaseConfigured }
