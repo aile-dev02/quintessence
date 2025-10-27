@@ -159,6 +159,18 @@ function App() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
+              <div className="w-8 h-8 mr-3 flex-shrink-0">
+                <svg viewBox="0 0 32 32" className="w-full h-full">
+                  <rect x="4" y="2" width="20" height="26" rx="2" ry="2" fill="#3B82F6"/>
+                  <line x1="7" y1="8" x2="21" y2="8" stroke="white" strokeWidth="0.5" opacity="0.7"/>
+                  <line x1="7" y1="11" x2="19" y2="11" stroke="white" strokeWidth="0.5" opacity="0.7"/>
+                  <line x1="7" y1="14" x2="20" y2="14" stroke="white" strokeWidth="0.5" opacity="0.7"/>
+                  <line x1="7" y1="17" x2="18" y2="17" stroke="white" strokeWidth="0.5" opacity="0.7"/>
+                  <line x1="7" y1="20" x2="21" y2="20" stroke="white" strokeWidth="0.5" opacity="0.7"/>
+                  <circle cx="10" cy="23" r="3" fill="#10B981"/>
+                  <text x="10" y="25" textAnchor="middle" fill="white" fontSize="4" fontWeight="bold">QA</text>
+                </svg>
+              </div>
               <h1 className="text-xl font-semibold text-gray-900">TestMemo</h1>
             </div>
             
