@@ -74,7 +74,7 @@ describe('Memo Model', () => {
       memo.update({
         id: 'new-id',
         createdAt: new Date('2020-01-01')
-      } as any)
+      } as Partial<Memo>)
 
       expect(memo.id).toBe(originalId)
       expect(memo.createdAt).toEqual(originalCreatedAt)

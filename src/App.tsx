@@ -1,14 +1,11 @@
 import { useState, useCallback, useEffect } from 'react'
-import { PlusIcon, Bars3Icon, MagnifyingGlassIcon, ChartBarIcon } from '@heroicons/react/24/outline'
+import { PlusIcon, Bars3Icon } from '@heroicons/react/24/outline'
 import { MemoForm } from './components/MemoForm'
 import { MemoList } from './components/MemoList'
 import { MemoDetail } from './components/MemoDetail'
 import { SearchAndFilterBar } from './components/SearchAndFilterBar'
-import { BulkActionsBar } from './components/BulkActionsBar'
-import { MemoStatsDashboard } from './components/MemoStatsDashboard'
 import { MemoService } from './services/MemoService'
 import { Memo } from './models/Memo'
-import type { MemoStatus, Priority } from './types'
 
 // View types for navigation
 type ViewType = 'list' | 'detail' | 'create' | 'edit' | 'stats'
@@ -131,8 +128,9 @@ function App() {
     : undefined
 
   // Error display
-  const errorDisplay = state.error && (
-    <div className="bg-red-50 border border-red-200 rounded-md p-4 mb-6">
+  // Error display component
+  const errorDisplay = state.error ? (
+    <div className="rounded-md bg-red-50 p-4 mb-6" role="alert" aria-live="polite">
       <div className="flex">
         <div className="ml-3">
           <h3 className="text-sm font-medium text-red-800">エラーが発生しました</h3>
@@ -142,8 +140,9 @@ function App() {
           <div className="mt-4">
             <button
               type="button"
-              className="bg-red-100 px-2 py-1 rounded-md text-sm font-medium text-red-800 hover:bg-red-200"
+              className="bg-red-100 px-2 py-1 rounded-md text-sm font-medium text-red-800 hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-red-500"
               onClick={() => setState(prev => ({ ...prev, error: null }))}
+              aria-label="エラーメッセージを閉じる"
             >
               閉じる
             </button>
@@ -151,16 +150,16 @@ function App() {
         </div>
       </div>
     </div>
-  )
+  ) : null
 
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <header className="bg-white shadow-sm border-b border-gray-200">
+      <header className="bg-white shadow-sm border-b border-gray-200" role="banner">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center">
-              <Bars3Icon className="h-6 w-6 text-gray-500 mr-3" />
+              <Bars3Icon className="h-6 w-6 text-gray-500 mr-3" aria-hidden="true" />
               <h1 className="text-xl font-semibold text-gray-900">TestMemo</h1>
             </div>
             
@@ -170,8 +169,9 @@ function App() {
                 <button
                   onClick={() => handleViewChange('create')}
                   className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                  aria-label="新しいメモを作成"
                 >
-                  <PlusIcon className="h-4 w-4 mr-2" />
+                  <PlusIcon className="h-4 w-4 mr-2" aria-hidden="true" />
                   新規作成
                 </button>
               )}
@@ -180,6 +180,7 @@ function App() {
                 <button
                   onClick={handleBackToList}
                   className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                  aria-label="メモ一覧に戻る"
                 >
                   一覧に戻る
                 </button>
@@ -190,7 +191,7 @@ function App() {
       </header>
 
       {/* Main content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8" role="main" aria-label="メインコンテンツ">
         {errorDisplay}
         
         {state.currentView === 'list' && (

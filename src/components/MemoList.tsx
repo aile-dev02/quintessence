@@ -51,9 +51,12 @@ export const MemoList: React.FC<MemoListProps> = ({
   onMemoDelete,
   selectedMemoId,
   searchQuery = '',
-  onSelectionChange,
-  bulkSelectionMode = false
+  onSelectionChange: _onSelectionChange,
+  bulkSelectionMode: _bulkSelectionMode = false
 }) => {
+  // Suppress unused variable warnings for future features
+  void _onSelectionChange
+  void _bulkSelectionMode
   const [memos, setMemos] = useState<Memo[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -61,7 +64,8 @@ export const MemoList: React.FC<MemoListProps> = ({
   const [sortOption, setSortOption] = useState<SortOption>({ field: 'updatedAt', direction: 'desc' })
   const [selectedTags, setSelectedTags] = useState<string[]>([])
   const [statusFilter, setStatusFilter] = useState<string>('all')
-  const [selectedMemoIds, setSelectedMemoIds] = useState<Set<string>>(new Set())
+  // Future feature: bulk selection
+  // const [selectedMemoIds] = useState<Set<string>>(new Set())
 
   const memoService = useMemo(() => MemoService.getInstance(), [])
 
@@ -86,40 +90,8 @@ export const MemoList: React.FC<MemoListProps> = ({
     loadMemos()
   }, [loadMemos])
 
-  // Selection handlers
-  const handleMemoSelection = useCallback((memoId: string, isSelected: boolean) => {
-    setSelectedMemoIds(prev => {
-      const newSet = new Set(prev)
-      if (isSelected) {
-        newSet.add(memoId)
-      } else {
-        newSet.delete(memoId)
-      }
-      
-      // Notify parent component
-      if (onSelectionChange) {
-        const selectedMemos = memos.filter(memo => newSet.has(memo.id))
-        onSelectionChange(selectedMemos)
-      }
-      
-      return newSet
-    })
-  }, [memos, onSelectionChange])
-
-  const handleSelectAll = useCallback((isSelected: boolean) => {
-    if (isSelected) {
-      const allMemoIds = new Set(memos.map(memo => memo.id))
-      setSelectedMemoIds(allMemoIds)
-      if (onSelectionChange) {
-        onSelectionChange(memos)
-      }
-    } else {
-      setSelectedMemoIds(new Set())
-      if (onSelectionChange) {
-        onSelectionChange([])
-      }
-    }
-  }, [memos, onSelectionChange])
+  // Note: Selection handlers removed as they are not currently used
+  // but bulkSelectionMode and onSelectionChange props are kept for future use
 
   // Get all unique tags
   const allTags = useMemo(() => {
