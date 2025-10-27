@@ -28,6 +28,12 @@ const isFirebaseConfigured = (): boolean => {
 }
 
 // Firebase configuration - 本番環境では環境変数が必須
+console.log('🔍 RAW ENV VARS:', {
+  PROJECT_ID: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+  API_KEY: import.meta.env.VITE_FIREBASE_API_KEY?.substring(0, 10) + '...',
+  AUTH_DOMAIN: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN
+})
+
 const firebaseConfig = {
   apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "",
   authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || "",
@@ -62,11 +68,18 @@ export function initializeFirebase(): { app: FirebaseApp; db: Firestore } {
   }
 
   try {
-    console.log('Firebase初期化開始:', firebaseConfig)
+    console.log('🔥 Firebase初期化開始:', firebaseConfig)
+    console.log('🔥 使用予定プロジェクトID:', firebaseConfig.projectId)
+    
+    // もし testmemo-demo が含まれていたら警告
+    if (JSON.stringify(firebaseConfig).includes('testmemo-demo')) {
+      console.error('❌ CRITICAL: testmemo-demo が検出されました!', firebaseConfig)
+      alert('エラー: testmemo-demo設定が検出されました。デバッグが必要です。')
+    }
 
     // Firebase アプリを初期化
     app = initializeApp(firebaseConfig)
-    console.log('Firebase App初期化完了')
+    console.log('✅ Firebase App初期化完了:', app.options.projectId)
     
     // Firestore を初期化
     db = getFirestore(app)
