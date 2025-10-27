@@ -61,7 +61,7 @@ export const MemoList: React.FC<MemoListProps> = ({
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [currentPage, setCurrentPage] = useState(1)
-  const [sortOption, setSortOption] = useState<SortOption>({ field: 'updatedAt', direction: 'desc' })
+  const [sortOption] = useState<SortOption>({ field: 'updatedAt', direction: 'desc' })
   const [selectedTags, setSelectedTags] = useState<string[]>([])
   const [statusFilter, setStatusFilter] = useState<string>('all')
   // Future feature: bulk selection
