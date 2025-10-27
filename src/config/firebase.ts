@@ -4,14 +4,13 @@ import type { FirebaseApp } from 'firebase/app'
 import type { Firestore } from 'firebase/firestore'
 
 // Firebase configuration
-// 本番環境では環境変数から取得することを推奨します
 const firebaseConfig = {
-  apiKey: "demo-api-key",
-  authDomain: "testmemo-demo.firebaseapp.com",  
-  projectId: "testmemo-demo",
-  storageBucket: "testmemo-demo.appspot.com",
-  messagingSenderId: "123456789",
-  appId: "1:123456789:web:abcdef123456"
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "demo-api-key",
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || "testmemo-demo.firebaseapp.com",
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || "testmemo-demo",
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || "testmemo-demo.appspot.com",
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || "123456789",
+  appId: import.meta.env.VITE_FIREBASE_APP_ID || "1:123456789:web:abcdef123456"
 }
 
 // デモ用の設定（実際のFirebaseプロジェクトを作成する場合は上記の値を置き換えてください）
@@ -28,6 +27,11 @@ export function initializeFirebase(): { app: FirebaseApp; db: Firestore } {
   }
 
   try {
+    // Firebase設定を検証
+    if (!firebaseConfig.projectId || firebaseConfig.projectId === "testmemo-demo") {
+      throw new Error('有効なFirebaseプロジェクトIDが設定されていません')
+    }
+
     // Firebase アプリを初期化
     app = initializeApp(firebaseConfig)
     
@@ -45,11 +49,14 @@ export function initializeFirebase(): { app: FirebaseApp; db: Firestore } {
       }
     }
     
-    console.log('Firebase が正常に初期化されました')
+    console.log('Firebase が正常に初期化されました:', {
+      projectId: firebaseConfig.projectId,
+      authDomain: firebaseConfig.authDomain
+    })
     return { app, db }
   } catch (error) {
     console.error('Firebase の初期化に失敗しました:', error)
-    throw new Error('Firebase の初期化に失敗しました')
+    throw new Error(`Firebase の初期化に失敗しました: ${error instanceof Error ? error.message : 'Unknown error'}`)
   }
 }
 

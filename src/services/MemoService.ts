@@ -17,14 +17,36 @@ export class MemoService {
   
   private localStorageService: LocalStorageService
   private indexedDBService: IndexedDBService
-  private firebaseService: FirebaseService
-  private useFirebase: boolean = true // Firebase同期を使用するかどうか
+  private firebaseService: FirebaseService | null = null
+  private useFirebase: boolean = false // 開発環境では無効化
 
   private constructor() {
     this.localStorageService = LocalStorageService.getInstance()
     this.indexedDBService = IndexedDBService.getInstance()
-    this.firebaseService = FirebaseService.getInstance()
-    this.initializeFirebaseSync()
+    
+    // 本番環境または環境変数でFirebaseプロジェクトIDが設定されている場合にFirebaseを初期化
+    const hasFirebaseConfig = import.meta.env.VITE_FIREBASE_PROJECT_ID && 
+                             import.meta.env.VITE_FIREBASE_PROJECT_ID !== "testmemo-demo"
+    const isProduction = import.meta.env.PROD
+    
+    if (hasFirebaseConfig || isProduction) {
+      this.useFirebase = true
+      try {
+        this.firebaseService = FirebaseService.getInstance()
+        this.initializeFirebaseSync()
+        console.log('Firebase同期が有効化されました:', {
+          projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
+          isProduction,
+          hasFirebaseConfig
+        })
+      } catch (error) {
+        console.warn('Firebase初期化に失敗しました:', error)
+        this.useFirebase = false
+        this.firebaseService = null
+      }
+    } else {
+      console.log('開発環境: Firebaseを無効化しました（ローカルストレージのみ使用）')
+    }
   }
 
   static getInstance(): MemoService {
@@ -38,7 +60,7 @@ export class MemoService {
    * Firebase同期を初期化
    */
   private initializeFirebaseSync(): void {
-    if (!this.useFirebase) return
+    if (!this.useFirebase || !this.firebaseService) return
 
     try {
       // リアルタイム同期を開始
@@ -54,6 +76,14 @@ export class MemoService {
    * 同期ステータスを取得
    */
   getSyncStatus(): SyncStatus {
+    if (!this.firebaseService) {
+      return {
+        isOnline: false,
+        lastSyncTime: null,
+        pendingUploads: 0,
+        error: null
+      }
+    }
     return this.firebaseService.getStatus()
   }
 
@@ -61,6 +91,8 @@ export class MemoService {
    * Firebase同期の有効/無効を切り替え
    */
   setFirebaseSync(enabled: boolean): void {
+    if (!this.firebaseService) return
+    
     this.useFirebase = enabled
     if (enabled) {
       this.firebaseService.startRealtimeSync()
@@ -93,7 +125,7 @@ export class MemoService {
       }
 
       // Sync to Firebase if online
-      if (this.useFirebase && this.firebaseService.isOnline()) {
+      if (this.useFirebase && this.firebaseService && this.firebaseService.isOnline()) {
         try {
           const firebaseId = await this.firebaseService.createMemo(memo.toJSON())
           console.log('Firebase sync successful:', firebaseId)
@@ -149,7 +181,7 @@ export class MemoService {
    * Firebase からメモを同期して取得
    */
   async syncFromFirebase(): Promise<Memo[]> {
-    if (!this.useFirebase || !this.firebaseService.isOnline()) {
+    if (!this.useFirebase || !this.firebaseService || !this.firebaseService.isOnline()) {
       return this.getAllMemos()
     }
 
@@ -205,7 +237,7 @@ export class MemoService {
       }
 
       // Sync to Firebase if online
-      if (this.useFirebase && this.firebaseService.isOnline()) {
+      if (this.useFirebase && this.firebaseService && this.firebaseService.isOnline()) {
         try {
           await this.firebaseService.updateMemo(id, memo.toJSON())
           console.log('Firebase update successful')
@@ -241,7 +273,7 @@ export class MemoService {
       }
 
       // Sync to Firebase if online
-      if (this.useFirebase && this.firebaseService.isOnline()) {
+      if (this.useFirebase && this.firebaseService && this.firebaseService.isOnline()) {
         try {
           await this.firebaseService.deleteMemo(id)
           console.log('Firebase delete successful')

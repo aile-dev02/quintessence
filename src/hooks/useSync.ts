@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { MemoService } from '../services/MemoService'
-import { FirebaseService, type SyncStatus } from '../services/FirebaseService'
+import type { SyncStatus } from '../services/FirebaseService'
 import type { Memo } from '../types'
 
 export interface SyncState {
@@ -19,81 +19,93 @@ export function useSync() {
       error: null
     },
     lastSyncTime: null,
-    isInitialSyncComplete: false,
+    isInitialSyncComplete: true, // 開発環境では常にtrue
     error: null
   })
 
   const memoService = MemoService.getInstance()
-  const firebaseService = FirebaseService.getInstance()
 
-  // 同期状態の更新を監視
+  // 同期状態の更新を監視（開発環境対応）
   useEffect(() => {
-    const handleStatusChange = (status: SyncStatus) => {
-      setSyncState(prev => ({
-        ...prev,
-        status,
-        error: status.error
-      }))
+    const updateStatus = () => {
+      try {
+        const status = memoService.getSyncStatus()
+        setSyncState(prev => ({
+          ...prev,
+          status,
+          error: status.error
+        }))
+      } catch (error) {
+        console.warn('同期ステータスの取得に失敗しました:', error)
+      }
     }
-
-    // Firebase Service のイベントリスナーを設定
-    firebaseService.on('statusChange', handleStatusChange)
 
     // 初期状態を設定
-    setSyncState(prev => ({
-      ...prev,
-      status: firebaseService.getStatus()
-    }))
+    updateStatus()
 
-    return () => {
-      firebaseService.off('statusChange')
-    }
-  }, [firebaseService])
-
-  // リアルタイム更新の処理
-  useEffect(() => {
-    const handleMemosUpdated = (memos: Memo[]) => {
-      // メモが更新された場合の処理
-      console.log('リアルタイム更新:', memos.length, '件のメモ')
+    // オンライン/オフライン状態の監視
+    const handleOnline = () => {
       setSyncState(prev => ({
         ...prev,
-        lastSyncTime: new Date(),
-        isInitialSyncComplete: true
+        status: { ...prev.status, isOnline: true }
       }))
     }
 
-    const handleError = (error: Error) => {
+    const handleOffline = () => {
       setSyncState(prev => ({
         ...prev,
-        error: error.message
+        status: { ...prev.status, isOnline: false } 
       }))
     }
 
-    firebaseService.on('memosUpdated', handleMemosUpdated)
-    firebaseService.on('error', handleError)
+    window.addEventListener('online', handleOnline)
+    window.addEventListener('offline', handleOffline)
+
+    // 定期的にステータスを更新（Firebase有効時のみ）
+    const interval = setInterval(updateStatus, 10000) // 10秒間隔
 
     return () => {
-      firebaseService.off('memosUpdated')
-      firebaseService.off('error')
+      clearInterval(interval)
+      window.removeEventListener('online', handleOnline)
+      window.removeEventListener('offline', handleOffline)
     }
-  }, [firebaseService])
+  }, [memoService])
 
   // 手動同期
   const syncNow = useCallback(async (): Promise<Memo[]> => {
     try {
-      setSyncState(prev => ({ ...prev, error: null }))
+      setSyncState(prev => ({ 
+        ...prev, 
+        error: null,
+        status: { ...prev.status, pendingUploads: prev.status.pendingUploads + 1 }
+      }))
+      
       const memos = await memoService.syncFromFirebase()
       
       setSyncState(prev => ({
         ...prev,
         lastSyncTime: new Date(),
-        isInitialSyncComplete: true
+        isInitialSyncComplete: true,
+        status: {
+          ...prev.status,
+          pendingUploads: Math.max(0, prev.status.pendingUploads - 1),
+          lastSyncTime: new Date(),
+          error: null
+        }
       }))
       
       return memos
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : '同期に失敗しました'
-      setSyncState(prev => ({ ...prev, error: errorMessage }))
+      setSyncState(prev => ({ 
+        ...prev, 
+        error: errorMessage,
+        status: {
+          ...prev.status,
+          pendingUploads: Math.max(0, prev.status.pendingUploads - 1),
+          error: errorMessage
+        }
+      }))
       throw error
     }
   }, [memoService])

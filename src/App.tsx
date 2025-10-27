@@ -8,7 +8,6 @@ import { SyncStatusBar } from './components/SyncStatusBar'
 import { MemoService } from './services/MemoService'
 import { Memo } from './models/Memo'
 import { useSync } from './hooks/useSync'
-import { initializeFirebase } from './config/firebase'
 
 // View types for navigation
 type ViewType = 'list' | 'detail' | 'create' | 'edit' | 'stats'
@@ -42,16 +41,6 @@ function App() {
 
   // 同期フックを使用
   const { syncState, syncNow, clearError } = useSync()
-
-  // Firebase初期化
-  useEffect(() => {
-    try {
-      initializeFirebase()
-      console.log('Firebase が初期化されました')
-    } catch (error) {
-      console.error('Firebase 初期化エラー:', error)
-    }
-  }, [])
 
   const loadMemos = useCallback(async () => {
     try {

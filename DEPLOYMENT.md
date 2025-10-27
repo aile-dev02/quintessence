@@ -44,6 +44,32 @@ npm run deploy
 
 ## ⚙️ Environment Configuration
 
+### Firebase Setup (Required for Production)
+
+1. **Create Firebase Project**:
+   - Go to [Firebase Console](https://console.firebase.google.com/)
+   - Create a new project
+   - Enable Firestore Database
+   - Set up security rules
+
+2. **Get Firebase Configuration**:
+   - Go to Project Settings > General
+   - Add a web app to get the config object
+   - Copy the configuration values
+
+3. **Vercel Environment Variables**:
+   Set these in your Vercel dashboard:
+
+```bash
+VITE_FIREBASE_PROJECT_ID="your-project-id"
+VITE_FIREBASE_API_KEY="your-api-key"
+VITE_FIREBASE_AUTH_DOMAIN="your-project-id.firebaseapp.com"
+VITE_FIREBASE_STORAGE_BUCKET="your-project-id.appspot.com"
+VITE_FIREBASE_MESSAGING_SENDER_ID="123456789"
+VITE_FIREBASE_APP_ID="1:123456789:web:abcdef123456"
+VITE_USE_FIREBASE_EMULATOR=false
+```
+
 ### Production Environment Variables
 Create `.env.production` file:
 
@@ -51,6 +77,14 @@ Create `.env.production` file:
 VITE_APP_TITLE="TestMemo - Production"
 VITE_ENABLE_ANALYTICS="true"
 VITE_BUILD_DATE="${new Date().toISOString()}"
+
+# Firebase Configuration (replace with your values)
+VITE_FIREBASE_PROJECT_ID="your-project-id"
+VITE_FIREBASE_API_KEY="your-api-key"
+VITE_FIREBASE_AUTH_DOMAIN="your-project-id.firebaseapp.com"
+VITE_FIREBASE_STORAGE_BUCKET="your-project-id.appspot.com"
+VITE_FIREBASE_MESSAGING_SENDER_ID="123456789"
+VITE_FIREBASE_APP_ID="1:123456789:web:abcdef123456"
 ```
 
 ### Staging Environment
