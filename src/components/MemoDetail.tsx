@@ -24,6 +24,12 @@ const STATUS_LABELS = {
   archived: 'アーカイブ'
 }
 
+const STATUS_DESCRIPTIONS = {
+  draft: '作成中のメモ。まだ完成していない状態です。',
+  published: '完成したメモ。他の人と共有可能な状態です。',
+  archived: '保存されているが、普段の表示からは隠されているメモです。'
+}
+
 const PRIORITY_COLORS = {
   low: 'bg-blue-100 text-gray-800 border-blue-200',
   medium: 'bg-yellow-100 text-blue-800 border-yellow-200',
@@ -199,7 +205,10 @@ export const MemoDetail: React.FC<MemoDetailProps> = ({
             </h1>
             
             <div className="flex items-center space-x-3 text-sm text-gray-600">
-              <span className={`px-2 py-1 rounded-full border ${STATUS_COLORS[memo.status]}`}>
+              <span 
+                className={`px-2 py-1 rounded-full border ${STATUS_COLORS[memo.status]}`}
+                title={STATUS_DESCRIPTIONS[memo.status]}
+              >
                 {STATUS_LABELS[memo.status]}
               </span>
               <span className={`px-2 py-1 rounded-full border ${PRIORITY_COLORS[memo.priority]}`}>
@@ -387,6 +396,7 @@ export const MemoDetail: React.FC<MemoDetailProps> = ({
               <button
                 onClick={() => handleStatusChange('published')}
                 className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-green-500"
+                title="メモを完成状態にして、共有可能にします"
               >
                 公開
               </button>
@@ -396,6 +406,7 @@ export const MemoDetail: React.FC<MemoDetailProps> = ({
               <button
                 onClick={() => handleStatusChange('archived')}
                 className="px-4 py-2 bg-gray-600 text-white rounded-md hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-500"
+                title="メモを保存したまま、普段の表示から隠します"
               >
                 アーカイブ
               </button>
