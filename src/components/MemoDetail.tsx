@@ -25,8 +25,8 @@ const STATUS_LABELS = {
 }
 
 const PRIORITY_COLORS = {
-  low: 'bg-blue-100 text-blue-800 border-blue-200',
-  medium: 'bg-yellow-100 text-yellow-800 border-yellow-200',
+  low: 'bg-blue-100 text-gray-800 border-blue-200',
+  medium: 'bg-yellow-100 text-blue-800 border-yellow-200',
   high: 'bg-orange-100 text-orange-800 border-orange-200',
   critical: 'bg-red-100 text-red-800 border-red-200'
 }
@@ -340,6 +340,15 @@ export const MemoDetail: React.FC<MemoDetailProps> = ({
         <div className="border-t border-gray-200 pt-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-600">
             <div>
+              <div className="mb-2 flex items-center">
+                <svg className="h-4 w-4 mr-2 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                </svg>
+                <span className="font-medium">投稿者:</span> 
+                <span className="ml-1 px-2 py-1 bg-blue-100 text-blue-800 rounded-md text-xs font-medium">
+                  {memo.authorName || '不明なユーザー'}
+                </span>
+              </div>
               <div className="mb-2">
                 <span className="font-medium">作成日時:</span> {formatDate(memo.createdAt)}
               </div>

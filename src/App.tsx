@@ -98,20 +98,19 @@ function MainApp() {
         
         for (const memo of state.memos) {
           if (!memo.authorId || !memo.authorName) {
-            // Update memo with current user as author
+            console.log('Migrating memo without author info:', memo.id, memo.title)
+            
+            // Update memo directly in storage
             memo.authorId = currentUser.id
             memo.authorName = currentUser.username
             needsUpdate = true
             
             try {
-              // Save the updated memo
-              await memoService.updateMemo(memo.id, {
-                title: memo.title,
-                body: memo.body,
-                tags: memo.tags,
-                projectId: memo.projectId || undefined,
-                priority: memo.priority
-              })
+              // Store the updated memo directly
+              const updatedMemo = { ...memo.toJSON(), authorId: currentUser.id, authorName: currentUser.username }
+              localStorage.setItem('memos', JSON.stringify(
+                memoService.getAllMemos().map(m => m.id === memo.id ? updatedMemo : m.toJSON())
+              ))
             } catch (error) {
               console.warn('Failed to migrate memo:', memo.id, error)
             }
@@ -119,14 +118,21 @@ function MainApp() {
         }
         
         if (needsUpdate) {
+          console.log('Reloading memos after migration')
           // Reload memos to reflect changes
-          await loadMemos()
+          setTimeout(() => loadMemos(), 100)
         }
       }
     }
 
-    migrateExistingMemos()
-  }, [currentUser, state.memos, loadMemos])
+    // Only run migration once per session
+    const migrationKey = `migration_done_${currentUser?.id}`
+    if (currentUser && !sessionStorage.getItem(migrationKey)) {
+      migrateExistingMemos().then(() => {
+        sessionStorage.setItem(migrationKey, 'true')
+      })
+    }
+  }, [currentUser, loadMemos])
 
   // Navigation handlers
   const handleViewChange = useCallback((view: ViewType, memoId?: string) => {

@@ -32,10 +32,11 @@ const STATUS_OPTIONS: Array<{ value: MemoStatus; label: string; color: string }>
 ]
 
 const PRIORITY_OPTIONS: Array<{ value: Priority; label: string; color: string }> = [
-  { value: 'critical', label: '緊急', color: 'bg-red-100 text-red-800' },
-  { value: 'high', label: '高', color: 'bg-orange-100 text-orange-800' },
+  
+  { value: 'low', label: '低', color: 'bg-gray-100 text-gray-800' },
   { value: 'medium', label: '中', color: 'bg-blue-100 text-blue-800' },
-  { value: 'low', label: '低', color: 'bg-gray-100 text-gray-800' }
+  { value: 'high', label: '高', color: 'bg-orange-100 text-orange-800' },
+  { value: 'critical', label: '緊急', color: 'bg-red-100 text-red-800' },
 ]
 
 export const FilterPanel: React.FC<FilterPanelProps> = ({
