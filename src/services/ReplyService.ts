@@ -1,5 +1,6 @@
 import { Reply } from '../models/Reply'
 import { AuthService } from './AuthService'
+import { AttachmentService } from './AttachmentService'
 import type { CreateReplyRequest, UpdateReplyRequest } from '../types'
 import { ValidationError, StorageError } from '../utils/errors'
 
@@ -31,8 +32,22 @@ export class ReplyService {
       memoId: memoId,
       content: request.content,
       authorId: currentUser.id,
-      authorName: currentUser.username
+      authorName: currentUser.username,
+      attachmentIds: request.attachmentIds || []
     })
+
+    // Update attachment memoIds if there are attachments
+    if (request.attachmentIds && request.attachmentIds.length > 0) {
+      try {
+        const attachmentService = new AttachmentService()
+        for (const attachmentId of request.attachmentIds) {
+          await attachmentService.updateAttachment(attachmentId, { memoId: memoId })
+        }
+        console.log(`Updated ${request.attachmentIds.length} reply attachments with memoId: ${memoId}`)
+      } catch (error) {
+        console.warn('Failed to update reply attachment memoIds:', error)
+      }
+    }
 
     // Store reply
     this.storeReply(reply)

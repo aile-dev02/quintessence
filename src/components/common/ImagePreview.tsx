@@ -19,22 +19,42 @@ export const ImagePreview: React.FC<ImagePreviewProps> = ({
   const attachmentService = new AttachmentService()
 
   // Check if file is image
-  const isImage = (fileType: string): boolean => {
-    return fileType.startsWith('image/') || 
-           /\.(jpg|jpeg|png|gif|webp|bmp|svg)$/i.test(attachment.fileName)
+  const isImage = (fileType: string, fileName: string): boolean => {
+    // Check MIME type first
+    if (fileType.startsWith('image/')) return true
+    
+    // Fallback to file extension
+    const imageExtensions = /\.(jpg|jpeg|png|gif|webp|bmp|svg)$/i
+    return imageExtensions.test(fileName)
   }
 
   // Load image preview
   const loadImagePreview = async () => {
-    if (!isImage(attachment.fileType) || imageUrl || isLoading) return
+    if (!isImage(attachment.fileType, attachment.fileName) || imageUrl || isLoading) return
+
+    console.log(`Loading image for ${attachment.fileName}:`, {
+      fileType: attachment.fileType,
+      hasContent: !!attachment.content,
+      contentLength: attachment.content?.length || 0,
+      contentPreview: attachment.content?.substring(0, 50) + '...',
+      isDataUrl: attachment.content?.startsWith('data:')
+    })
 
     setIsLoading(true)
     setError(null)
 
     try {
-      const { blob } = await attachmentService.downloadAttachment(attachment.id)
-      const url = URL.createObjectURL(blob)
-      setImageUrl(url)
+      // Try to use attachment content if available (base64 data URL)
+      if (attachment.content && attachment.content.startsWith('data:')) {
+        console.log(`Using direct content for ${attachment.fileName}`)
+        setImageUrl(attachment.content)
+      } else {
+        console.log(`Fallback to blob download for ${attachment.fileName}`)
+        // Fallback to downloading the attachment
+        const { blob } = await attachmentService.downloadAttachment(attachment.id)
+        const url = URL.createObjectURL(blob)
+        setImageUrl(url)
+      }
     } catch (err) {
       console.error('Failed to load image preview:', err)
       setError('画像の読み込みに失敗しました')
@@ -57,10 +77,10 @@ export const ImagePreview: React.FC<ImagePreviewProps> = ({
 
   // Load image on mount
   React.useEffect(() => {
-    if (isImage(attachment.fileType)) {
+    if (isImage(attachment.fileType, attachment.fileName)) {
       loadImagePreview()
     }
-  }, [attachment.id, attachment.fileType])
+  }, [attachment.id, attachment.fileType, attachment.fileName])
 
   // Cleanup URL on unmount
   React.useEffect(() => {
@@ -71,7 +91,7 @@ export const ImagePreview: React.FC<ImagePreviewProps> = ({
     }
   }, [imageUrl])
 
-  if (!isImage(attachment.fileType)) {
+  if (!isImage(attachment.fileType, attachment.fileName)) {
     return null
   }
 

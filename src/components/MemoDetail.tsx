@@ -5,7 +5,6 @@ import { Reply } from '../models/Reply'
 import { MemoService } from '../services/MemoService'
 import { AttachmentService } from '../services/AttachmentService'
 import { ReplyService } from '../services/ReplyService'
-import { AuthService } from '../services/AuthService'
 import { ReplyForm } from './common/ReplyForm'
 import { ReplyItem } from './common/ReplyItem'
 import { AttachmentList } from './common/AttachmentList'
@@ -68,7 +67,6 @@ export const MemoDetail: React.FC<MemoDetailProps> = ({
   const memoService = useMemo(() => MemoService.getInstance(), [])
   const attachmentService = useMemo(() => new AttachmentService(), [])
   const replyService = useMemo(() => ReplyService.getInstance(), [])
-  const authService = useMemo(() => AuthService.getInstance(), [])
 
   // Update local memo state when initialMemo changes
   useEffect(() => {
@@ -78,11 +76,23 @@ export const MemoDetail: React.FC<MemoDetailProps> = ({
   // Load attachments
   useEffect(() => {
     const loadAttachments = async () => {
+      console.log(`Loading attachments for memo ${memo.id}:`, {
+        attachmentIds: memo.attachmentIds,
+        attachmentCount: memo.attachmentIds.length
+      })
+      
       if (memo.attachmentIds.length === 0) return
 
       try {
         setLoading(true)
         const loadedAttachments = await attachmentService.getAttachmentsByMemo(memo.id)
+        console.log(`Loaded ${loadedAttachments.length} attachments:`, loadedAttachments.map(a => ({
+          id: a.id,
+          fileName: a.fileName,
+          fileType: a.fileType,
+          hasContent: !!a.content,
+          contentLength: a.content?.length || 0
+        })))
         setAttachments(loadedAttachments)
       } catch (err) {
         console.error('Failed to load attachments:', err)

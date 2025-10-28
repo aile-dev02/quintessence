@@ -12,6 +12,7 @@ import { FirebaseService, type SyncStatus } from './FirebaseService'
 import { AuthService } from './AuthService'
 import { ValidationError, StorageError } from '../utils/errors'
 import { isFirebaseConfigured } from '../config/firebase'
+import { AttachmentService } from './AttachmentService'
 
 export class MemoService {
   private static readonly STORAGE_KEY = 'memos'
@@ -121,8 +122,22 @@ export class MemoService {
         projectId: request.projectId,
         priority: request.priority || 'medium',
         authorId: currentUser.id,
-        authorName: currentUser.username
+        authorName: currentUser.username,
+        attachmentIds: request.attachmentIds || []
       })
+
+      // Update attachment memoIds if there are attachments
+      if (request.attachmentIds && request.attachmentIds.length > 0) {
+        try {
+          const attachmentService = new AttachmentService()
+          for (const attachmentId of request.attachmentIds) {
+            await attachmentService.updateAttachment(attachmentId, { memoId: memo.id })
+          }
+          console.log(`Updated ${request.attachmentIds.length} attachments with memoId: ${memo.id}`)
+        } catch (error) {
+          console.warn('Failed to update attachment memoIds:', error)
+        }
+      }
 
       // Store memo in LocalStorage (immediate backup)
       this.storeMemo(memo)
@@ -238,6 +253,19 @@ export class MemoService {
         priority: request.priority,
         status: request.status
       })
+
+      // Update attachment memoIds if there are attachments
+      if (request.attachmentIds && request.attachmentIds.length > 0) {
+        try {
+          const attachmentService = new AttachmentService()
+          for (const attachmentId of request.attachmentIds) {
+            await attachmentService.updateAttachment(attachmentId, { memoId: memo.id })
+          }
+          console.log(`Updated ${request.attachmentIds.length} attachments with memoId: ${memo.id}`)
+        } catch (error) {
+          console.warn('Failed to update attachment memoIds:', error)
+        }
+      }
 
       // Store memo in LocalStorage (immediate backup)
       this.storeMemo(memo)

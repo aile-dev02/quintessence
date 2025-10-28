@@ -70,6 +70,14 @@ export const AttachmentList: React.FC<AttachmentListProps> = ({
 
   // Render attachment preview
   const renderPreview = (attachment: Attachment) => {
+    console.log(`Rendering attachment: ${attachment.fileName}`, {
+      isImage: attachment.isImage(),
+      fileType: attachment.fileType,
+      hasContent: !!attachment.content,
+      contentLength: attachment.content?.length || 0,
+      id: attachment.id
+    })
+    
     if (attachment.isImage()) {
       return (
         <div className="attachment-preview">

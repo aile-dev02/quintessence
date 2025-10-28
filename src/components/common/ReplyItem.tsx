@@ -31,7 +31,6 @@ export const ReplyItem: React.FC<ReplyItemProps> = ({
 
   const replyService = ReplyService.getInstance()
   const authService = AuthService.getInstance()
-  const attachmentService = new AttachmentService()
   const currentUser = authService.getCurrentUser()
 
   const isAuthor = currentUser?.id === reply.authorId
@@ -44,20 +43,28 @@ export const ReplyItem: React.FC<ReplyItemProps> = ({
 
       setLoadingAttachments(true)
       try {
-        // For now, create mock attachments from IDs
-        // In real implementation, you'd fetch from AttachmentService
-        const mockAttachments = reply.attachmentIds.map(id => 
-          new Attachment({
-            id,
-            memoId: '', // Will be set by service
-            fileName: `attachment_${id}`,
-            fileType: 'application/octet-stream',
-            fileSize: 0,
-            content: '',
-            uploadedAt: new Date()
-          })
-        )
-        setAttachments(mockAttachments)
+        console.log(`Loading ${reply.attachmentIds.length} attachments for reply ${reply.id}:`, reply.attachmentIds)
+        
+        const attachmentService = new AttachmentService()
+        const loadedAttachments: Attachment[] = []
+        
+        for (const attachmentId of reply.attachmentIds) {
+          try {
+            const attachment = await attachmentService.getAttachment(attachmentId)
+            if (attachment) {
+              loadedAttachments.push(attachment)
+            } else {
+              console.warn(`Attachment not found: ${attachmentId}`)
+            }
+          } catch (error) {
+            console.error(`Failed to load attachment ${attachmentId}:`, error)
+          }
+        }
+        
+        console.log(`Loaded ${loadedAttachments.length} attachments for reply ${reply.id}:`, 
+          loadedAttachments.map(a => ({ id: a.id, fileName: a.fileName, fileType: a.fileType })))
+        
+        setAttachments(loadedAttachments)
       } catch (err) {
         console.error('Failed to load reply attachments:', err)
       } finally {

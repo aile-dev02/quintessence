@@ -115,14 +115,23 @@ export const validateReplyFileType = (fileType: string): string | null => {
     'text/csv',
     'application/json',
     'application/pdf',
-    // Excel files
-    'application/vnd.ms-excel',
-    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-    'application/vnd.ms-excel.sheet.macroEnabled.12',
-    'application/vnd.ms-excel.template.macroEnabled.12',
+    // Excel files (including Microsoft Excel Worksheet)
+    'application/vnd.ms-excel', // .xls files
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', // .xlsx files
+    'application/vnd.ms-excel.sheet.macroEnabled.12', // .xlsm files
+    'application/vnd.ms-excel.template.macroEnabled.12', // .xltm files
+    'application/vnd.ms-excel.addin.macroEnabled.12', // .xlam files
+    'application/vnd.ms-excel.sheet.binary.macroEnabled.12', // .xlsb files
     // CSV alternatives
     'text/comma-separated-values',
-    'application/csv'
+    'application/csv',
+    // Additional Excel MIME types that some systems use
+    'application/x-excel',
+    'application/x-msexcel',
+    'application/excel',
+    'application/msexcel',
+    'application/x-xlsx',
+    'application/xlsx'
   ]
   
   if (!allowedTypes.includes(fileType)) {

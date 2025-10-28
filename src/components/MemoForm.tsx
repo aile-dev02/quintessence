@@ -94,6 +94,7 @@ export const MemoForm: React.FC<MemoFormProps> = ({
       let savedMemo: Memo
 
       const attachmentIds = attachments.map(attachment => attachment.id)
+      console.log(`Creating/updating memo with ${attachments.length} attachments:`, attachmentIds)
 
       if (isEditing && memo) {
         // Update existing memo
@@ -132,6 +133,14 @@ export const MemoForm: React.FC<MemoFormProps> = ({
 
   // Handle file upload completion
   const handleFilesUploaded = (newAttachments: Attachment[]) => {
+    console.log(`Files uploaded to MemoForm:`, newAttachments.map(a => ({
+      id: a.id,
+      fileName: a.fileName,
+      fileType: a.fileType,
+      hasContent: !!a.content,
+      contentLength: a.content?.length || 0,
+      isImage: a.isImage()
+    })))
     setAttachments(prev => [...prev, ...newAttachments])
   }
 

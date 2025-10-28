@@ -4,7 +4,7 @@ import { formatDate } from '../utils/dateUtils'
 import { 
   validateFileName, 
   validateFileSize, 
-  validateFileType,
+  validateReplyFileType,
   sanitizeInput 
 } from '../utils/validation'
 import { ValidationError, FileProcessingError } from '../utils/errors'
@@ -34,6 +34,12 @@ export class Attachment implements AttachmentInterface {
    * Create a new attachment from File object
    */
   static async createFromFile(file: File, memoId: string): Promise<Attachment> {
+    console.log(`Creating attachment from file: ${file.name}`, {
+      type: file.type,
+      size: file.size,
+      extension: file.name.toLowerCase().substring(file.name.lastIndexOf('.'))
+    })
+    
     // Validate file properties
     const fileNameError = validateFileName(file.name)
     if (fileNameError) {
@@ -45,8 +51,21 @@ export class Attachment implements AttachmentInterface {
       throw new ValidationError(fileSizeError)
     }
 
-    const fileTypeError = validateFileType(file.type)
-    if (fileTypeError) {
+    // Validate file type with extension-based fallback for Excel files
+    const fileTypeError = validateReplyFileType(file.type)
+    const isExcelFile = file.name.toLowerCase().endsWith('.xlsx') || 
+                       file.name.toLowerCase().endsWith('.xls') ||
+                       file.name.toLowerCase().endsWith('.xlsm')
+    
+    console.log(`Attachment validation results:`, {
+      fileName: file.name,
+      fileType: file.type,
+      fileTypeError,
+      isExcelFile,
+      willAccept: !fileTypeError || isExcelFile
+    })
+    
+    if (fileTypeError && !isExcelFile) {
       throw new ValidationError(fileTypeError)
     }
 

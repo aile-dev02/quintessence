@@ -7,7 +7,6 @@ import { Attachment } from '../../models/Attachment'
 import { MentionInput } from './MentionInput'
 import { FileUpload } from './FileUpload'
 import { AttachmentList } from './AttachmentList'
-import { getMentionedUserIds } from '../../utils/mentions'
 import type { CreateReplyRequest } from '../../types'
 import './ReplyForm.css'
 
@@ -29,7 +28,6 @@ export const ReplyForm: React.FC<ReplyFormProps> = ({
   const [error, setError] = useState<string | null>(null)
   const [mentionedUserIds, setMentionedUserIds] = useState<string[]>([])
   const [attachments, setAttachments] = useState<Attachment[]>([])
-  const [showFileUpload, setShowFileUpload] = useState(false)
 
   const replyService = ReplyService.getInstance()
   const authService = AuthService.getInstance()
@@ -57,6 +55,11 @@ export const ReplyForm: React.FC<ReplyFormProps> = ({
         content: content.trim(),
         attachmentIds: attachments.map(att => att.id)
       }
+
+      console.log(`Creating reply with ${attachments.length} attachments:`, {
+        attachmentIds: createRequest.attachmentIds,
+        attachments: attachments.map(a => ({ id: a.id, fileName: a.fileName }))
+      })
 
       const newReply = await replyService.createReply(memoId, createRequest)
       
@@ -88,7 +91,6 @@ export const ReplyForm: React.FC<ReplyFormProps> = ({
       setContent('')
       setMentionedUserIds([])
       setAttachments([])
-      setShowFileUpload(false)
     } catch (error) {
       console.error('Error creating reply:', error)
       setError(error instanceof Error ? error.message : '返信の投稿に失敗しました')
@@ -99,6 +101,14 @@ export const ReplyForm: React.FC<ReplyFormProps> = ({
 
   // Handle file upload completion
   const handleFilesUploaded = (newAttachments: Attachment[]) => {
+    console.log(`Files uploaded to ReplyForm:`, newAttachments.map(a => ({
+      id: a.id,
+      fileName: a.fileName,
+      fileType: a.fileType,
+      hasContent: !!a.content,
+      contentLength: a.content?.length || 0,
+      isImage: a.isImage()
+    })))
     setAttachments(prev => [...prev, ...newAttachments])
   }
 

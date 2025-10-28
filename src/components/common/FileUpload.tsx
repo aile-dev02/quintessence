@@ -4,6 +4,25 @@ import { Attachment } from '../../models/Attachment'
 import { validateReplyFileType, validateReplyFileSize } from '../../utils/validation'
 import './FileUpload.css'
 
+// Helper function to validate file by extension
+const validateFileByExtension = (fileName: string): string | null => {
+  const allowedExtensions = [
+    // Images
+    '.jpg', '.jpeg', '.png', '.gif', '.webp', '.bmp', '.svg',
+    // Documents
+    '.txt', '.csv', '.json', '.pdf',
+    // Excel files
+    '.xls', '.xlsx', '.xlsm', '.xltm', '.xlam', '.xlsb'
+  ]
+  
+  const extension = fileName.toLowerCase().substring(fileName.lastIndexOf('.'))
+  if (!allowedExtensions.includes(extension)) {
+    return '対応していないファイル形式です。画像、CSV、Excelファイルのみアップロード可能です'
+  }
+  
+  return null
+}
+
 interface FileUploadProps {
   onFilesUploaded: (attachments: Attachment[]) => void
   onError?: (error: string) => void
@@ -47,11 +66,34 @@ export const FileUpload: React.FC<FileUploadProps> = ({
     const validFiles: UploadingFile[] = []
     
     for (const file of selectedFiles) {
-      // Validate file type
+      console.log(`Processing file: ${file.name}, type: ${file.type}, size: ${file.size}`)
+      
+      // Validate file type (including extension-based fallback)
       const typeError = validateReplyFileType(file.type)
-      if (typeError) {
+      const extensionError = validateFileByExtension(file.name)
+      
+      console.log(`Validation results for ${file.name}:`, {
+        fileType: file.type,
+        typeError,
+        extensionError,
+        extension: file.name.toLowerCase().substring(file.name.lastIndexOf('.'))
+      })
+      
+      // For .xlsx files, prioritize extension-based validation
+      const isExcelFile = file.name.toLowerCase().endsWith('.xlsx') || 
+                         file.name.toLowerCase().endsWith('.xls') ||
+                         file.name.toLowerCase().endsWith('.xlsm')
+      
+      if (isExcelFile && !extensionError) {
+        console.log(`Accepting Excel file based on extension: ${file.name}`)
+      } else if (typeError && extensionError) {
+        console.error(`File validation failed: ${file.name}`, { typeError, extensionError })
         onError?.(`${file.name}: ${typeError}`)
         continue
+      } else if (typeError) {
+        console.log(`Using extension-based validation for ${file.name} (MIME type validation failed)`)
+      } else if (extensionError) {
+        console.log(`Using MIME type validation for ${file.name} (extension validation failed)`)
       }
 
       // Validate file size
@@ -87,6 +129,11 @@ export const FileUpload: React.FC<FileUploadProps> = ({
         ))
 
         // Create attachment
+        console.log(`Starting upload for file: ${uploadingFile.file.name}`, {
+          type: uploadingFile.file.type,
+          size: uploadingFile.file.size
+        })
+        
         const attachment = await attachmentService.uploadAttachment(
           uploadingFile.file,
           'temp', // Will be updated when reply is created
@@ -96,6 +143,14 @@ export const FileUpload: React.FC<FileUploadProps> = ({
             ))
           }
         )
+        
+        console.log(`Upload completed for ${uploadingFile.file.name}:`, {
+          id: attachment.id,
+          fileName: attachment.fileName,
+          fileType: attachment.fileType,
+          hasContent: !!attachment.content,
+          contentLength: attachment.content?.length || 0
+        })
 
         // Update progress to complete
         setUploadingFiles(prev => prev.map((f, index) => 
@@ -103,6 +158,7 @@ export const FileUpload: React.FC<FileUploadProps> = ({
         ))
 
         uploadedAttachments.push(attachment)
+        console.log(`Successfully uploaded: ${attachment.fileName}`, attachment)
 
       } catch (error) {
         console.error('File upload error:', error)
