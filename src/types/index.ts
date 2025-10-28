@@ -27,6 +27,17 @@ export interface Memo {
   linkedCards: string[]
 }
 
+export interface Reply {
+  id: string
+  memoId: string
+  content: string
+  authorId: string
+  authorName: string
+  createdAt: Date
+  updatedAt: Date
+  isEdited: boolean
+}
+
 export interface Attachment {
   id: string
   memoId: string
@@ -101,6 +112,14 @@ export interface UpdateMemoRequest {
   projectId?: string
   priority?: Priority
   status?: MemoStatus
+}
+
+export interface CreateReplyRequest {
+  content: string
+}
+
+export interface UpdateReplyRequest {
+  content: string
 }
 
 export interface MemoFilters {

@@ -205,3 +205,15 @@ export const validatePassword = (password: string): string | null => {
   
   return null
 }
+
+export const validateReplyContent = (content: string): string | null => {
+  if (!content || content.trim().length === 0) {
+    return '返信内容は必須です'
+  }
+  
+  if (content.length > 1000) {
+    return '返信内容は1000文字以内で入力してください'
+  }
+  
+  return null
+}

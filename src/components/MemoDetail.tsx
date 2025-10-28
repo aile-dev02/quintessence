@@ -1,8 +1,13 @@
 import React, { useState, useEffect, useMemo } from 'react'
 import { Memo } from '../models/Memo'
 import { Attachment } from '../models/Attachment'
+import { Reply } from '../models/Reply'
 import { MemoService } from '../services/MemoService'
 import { AttachmentService } from '../services/AttachmentService'
+import { ReplyService } from '../services/ReplyService'
+import { AuthService } from '../services/AuthService'
+import { ReplyForm } from './common/ReplyForm'
+import { ReplyItem } from './common/ReplyItem'
 
 interface MemoDetailProps {
   memo: Memo
@@ -53,6 +58,7 @@ export const MemoDetail: React.FC<MemoDetailProps> = ({
 }) => {
   const [memo, setMemo] = useState<Memo>(initialMemo)
   const [attachments, setAttachments] = useState<Attachment[]>([])
+  const [replies, setReplies] = useState<Reply[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [successMessage, setSuccessMessage] = useState<string | null>(null)
@@ -60,6 +66,8 @@ export const MemoDetail: React.FC<MemoDetailProps> = ({
 
   const memoService = useMemo(() => MemoService.getInstance(), [])
   const attachmentService = useMemo(() => new AttachmentService(), [])
+  const replyService = useMemo(() => ReplyService.getInstance(), [])
+  const authService = useMemo(() => AuthService.getInstance(), [])
 
   // Update local memo state when initialMemo changes
   useEffect(() => {
@@ -85,6 +93,21 @@ export const MemoDetail: React.FC<MemoDetailProps> = ({
 
     loadAttachments()
   }, [memo.id, memo.attachmentIds, attachmentService])
+
+  // Load replies
+  useEffect(() => {
+    const loadReplies = () => {
+      try {
+        const loadedReplies = replyService.getRepliesByMemo(memo.id)
+        setReplies(loadedReplies)
+      } catch (err) {
+        console.error('Failed to load replies:', err)
+        setError('返信の読み込みに失敗しました')
+      }
+    }
+
+    loadReplies()
+  }, [memo.id, replyService])
 
   // Handle memo status change
   const handleStatusChange = async (newStatus: 'published' | 'archived' | 'draft') => {
@@ -177,6 +200,27 @@ export const MemoDetail: React.FC<MemoDetailProps> = ({
       console.error('Failed to delete attachment:', err)
       setError('添付ファイルの削除に失敗しました')
     }
+  }
+
+  // Handle reply operations
+  const handleReplyCreated = (reply: Reply) => {
+    setReplies(prev => [...prev, reply])
+    setSuccessMessage('返信を投稿しました')
+    setTimeout(() => setSuccessMessage(null), 3000)
+  }
+
+  const handleReplyUpdated = (updatedReply: Reply) => {
+    setReplies(prev => prev.map(reply => 
+      reply.id === updatedReply.id ? updatedReply : reply
+    ))
+    setSuccessMessage('返信を更新しました')
+    setTimeout(() => setSuccessMessage(null), 3000)
+  }
+
+  const handleReplyDeleted = (replyId: string) => {
+    setReplies(prev => prev.filter(reply => reply.id !== replyId))
+    setSuccessMessage('返信を削除しました')
+    setTimeout(() => setSuccessMessage(null), 3000)
   }
 
   // Format date
@@ -454,6 +498,47 @@ export const MemoDetail: React.FC<MemoDetailProps> = ({
               </div>
             </div>
           </div>
+        </div>
+
+        {/* Replies Section */}
+        <div className="border-t border-gray-200 pt-6 mt-6">
+          <div className="mb-4">
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+              💬 返信 ({replies.length})
+            </h3>
+            <p className="text-sm text-gray-600">
+              このメモについて質問や意見を投稿できます
+            </p>
+          </div>
+
+          {/* Reply Form */}
+          <div className="mb-6">
+            <ReplyForm
+              memoId={memo.id}
+              onReplyCreated={handleReplyCreated}
+            />
+          </div>
+
+          {/* Replies List */}
+          {replies.length > 0 ? (
+            <div className="space-y-4">
+              {replies.map(reply => (
+                <ReplyItem
+                  key={reply.id}
+                  reply={reply}
+                  isMemoAuthor={reply.authorId === memo.authorId}
+                  onReplyUpdated={handleReplyUpdated}
+                  onReplyDeleted={handleReplyDeleted}
+                />
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-8 text-gray-500">
+              <div className="text-4xl mb-2">💭</div>
+              <p className="text-sm">まだ返信がありません</p>
+              <p className="text-xs">最初の返信を投稿してみましょう！</p>
+            </div>
+          )}
         </div>
       </div>
 
