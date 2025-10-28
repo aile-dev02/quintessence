@@ -1,0 +1,299 @@
+.attachment-list {
+  width: 100%;
+  margin-top: 12px;
+}
+
+.attachment-list-header {
+  margin-bottom: 12px;
+}
+
+.attachment-count {
+  margin: 0;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #374151;
+}
+
+.attachment-items {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.attachment-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.attachment-item:hover {
+  background: #f3f4f6;
+  border-color: #d1d5db;
+}
+
+/* Preview */
+.attachment-preview {
+  flex-shrink: 0;
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.preview-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 4px;
+}
+
+.preview-icon {
+  font-size: 1.5rem;
+  opacity: 0.7;
+}
+
+/* File info */
+.attachment-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.attachment-name {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: #374151;
+  margin-bottom: 4px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.attachment-meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: 0.75rem;
+  color: #6b7280;
+}
+
+.attachment-size {
+  font-weight: 500;
+}
+
+.attachment-date {
+  opacity: 0.8;
+}
+
+/* Actions */
+.attachment-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.attachment-action-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border: none;
+  background: #ffffff;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.875rem;
+  transition: all 0.2s ease;
+}
+
+.attachment-action-btn:hover:not(:disabled) {
+  background: #f3f4f6;
+  border-color: #9ca3af;
+}
+
+.attachment-action-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.download-btn:hover:not(:disabled) {
+  background: #eff6ff;
+  border-color: #3b82f6;
+}
+
+.remove-btn:hover {
+  background: #fef2f2;
+  border-color: #dc2626;
+}
+
+.loading-spinner {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Responsive design */
+@media (max-width: 640px) {
+  .attachment-item {
+    padding: 10px;
+    gap: 10px;
+  }
+  
+  .attachment-preview {
+    width: 40px;
+    height: 40px;
+  }
+  
+  .preview-icon {
+    font-size: 1.25rem;
+  }
+  
+  .attachment-name {
+    font-size: 0.8rem;
+  }
+  
+  .attachment-meta {
+    gap: 8px;
+    font-size: 0.7rem;
+  }
+  
+  .attachment-action-btn {
+    width: 28px;
+    height: 28px;
+    font-size: 0.75rem;
+  }
+}
+
+/* Grid layout for multiple items */
+@media (min-width: 768px) {
+  .attachment-items {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 12px;
+  }
+  
+  .attachment-item {
+    flex-direction: column;
+    text-align: center;
+    padding: 16px;
+  }
+  
+  .attachment-preview {
+    width: 64px;
+    height: 64px;
+    margin-bottom: 8px;
+  }
+  
+  .preview-icon {
+    font-size: 2rem;
+  }
+  
+  .attachment-info {
+    margin-bottom: 12px;
+  }
+  
+  .attachment-meta {
+    justify-content: center;
+  }
+}
+
+/* Focus states for accessibility */
+.attachment-action-btn:focus {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+
+/* High contrast mode */
+@media (prefers-contrast: high) {
+  .attachment-item {
+    border-width: 2px;
+  }
+  
+  .attachment-action-btn {
+    border-width: 2px;
+  }
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .attachment-item {
+    transition: none;
+  }
+  
+  .attachment-action-btn {
+    transition: none;
+  }
+  
+  .loading-spinner {
+    animation: none;
+  }
+}
+
+/* Image preview integration */
+.attachment-image-preview {
+  width: 100%;
+  height: 100%;
+}
+
+.attachment-image-preview .image-preview-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  max-height: none;
+  border-radius: 4px;
+}
+
+.attachment-image-preview .image-preview-overlay,
+.attachment-image-preview .image-preview-info {
+  display: none;
+}
+
+/* Grid layout for image attachments */
+.attachment-items.image-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 16px;
+}
+
+.attachment-items.image-grid .attachment-item {
+  flex-direction: column;
+  align-items: stretch;
+  padding: 8px;
+}
+
+.attachment-items.image-grid .attachment-preview {
+  width: 100%;
+  height: 150px;
+  margin-bottom: 8px;
+}
+
+.attachment-items.image-grid .attachment-image-preview .image-preview-img {
+  max-height: 150px;
+  width: 100%;
+  object-fit: cover;
+}
+
+.attachment-items.image-grid .attachment-info {
+  flex: none;
+  text-align: center;
+}
+
+.attachment-items.image-grid .attachment-actions {
+  justify-content: center;
+  margin-top: 8px;
+}

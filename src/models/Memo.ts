@@ -47,6 +47,7 @@ export class Memo implements MemoInterface {
     title: string
     body: string
     tags?: string[]
+    attachmentIds?: string[]
     projectId?: string
     priority?: Priority
     authorId: string
@@ -79,6 +80,7 @@ export class Memo implements MemoInterface {
       title: sanitizedTitle,
       body: sanitizedBody,
       tags: sanitizedTags,
+      attachmentIds: data.attachmentIds || [],
       projectId: data.projectId || null,
       priority: data.priority || 'medium',
       status: 'draft',
@@ -94,6 +96,7 @@ export class Memo implements MemoInterface {
     title?: string
     body?: string
     tags?: string[]
+    attachmentIds?: string[]
     status?: MemoStatus
     priority?: Priority
     projectId?: string | null
@@ -132,6 +135,10 @@ export class Memo implements MemoInterface {
 
     if (updates.projectId !== undefined) {
       this.projectId = updates.projectId
+    }
+
+    if (updates.attachmentIds !== undefined) {
+      this.attachmentIds = updates.attachmentIds
     }
 
     this.updatedAt = new Date()

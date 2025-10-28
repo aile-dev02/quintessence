@@ -1,9 +1,12 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Reply } from '../../models/Reply'
+import { Attachment } from '../../models/Attachment'
 import { ReplyService } from '../../services/ReplyService'
+import { AttachmentService } from '../../services/AttachmentService'
 import { AuthService } from '../../services/AuthService'
 import { formatDateTime } from '../../utils/dateUtils'
 import type { UpdateReplyRequest } from '../../types'
+import { AttachmentList } from './AttachmentList'
 import './ReplyItem.css'
 
 interface ReplyItemProps {
@@ -23,13 +26,47 @@ export const ReplyItem: React.FC<ReplyItemProps> = ({
   const [editContent, setEditContent] = useState(reply.content)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [attachments, setAttachments] = useState<Attachment[]>([])
+  const [loadingAttachments, setLoadingAttachments] = useState(false)
 
   const replyService = ReplyService.getInstance()
   const authService = AuthService.getInstance()
+  const attachmentService = new AttachmentService()
   const currentUser = authService.getCurrentUser()
 
   const isAuthor = currentUser?.id === reply.authorId
   const canEdit = replyService.canEditReply(reply.id)
+
+  // Load attachments when reply has attachmentIds
+  useEffect(() => {
+    const loadAttachments = async () => {
+      if (reply.attachmentIds.length === 0) return
+
+      setLoadingAttachments(true)
+      try {
+        // For now, create mock attachments from IDs
+        // In real implementation, you'd fetch from AttachmentService
+        const mockAttachments = reply.attachmentIds.map(id => 
+          new Attachment({
+            id,
+            memoId: '', // Will be set by service
+            fileName: `attachment_${id}`,
+            fileType: 'application/octet-stream',
+            fileSize: 0,
+            content: '',
+            uploadedAt: new Date()
+          })
+        )
+        setAttachments(mockAttachments)
+      } catch (err) {
+        console.error('Failed to load reply attachments:', err)
+      } finally {
+        setLoadingAttachments(false)
+      }
+    }
+
+    loadAttachments()
+  }, [reply.id, reply.attachmentIds.length])
 
   const handleEditStart = () => {
     setIsEditing(true)
@@ -152,6 +189,23 @@ export const ReplyItem: React.FC<ReplyItemProps> = ({
           </div>
         )}
       </div>
+
+      {/* Attachments */}
+      {reply.attachmentIds.length > 0 && (
+        <div className="reply-attachments">
+          {loadingAttachments ? (
+            <div className="reply-attachments-loading">
+              <span className="loading-spinner">⏳</span>
+              <span>添付ファイルを読み込み中...</span>
+            </div>
+          ) : (
+            <AttachmentList
+              attachments={attachments}
+              className="reply-attachment-list"
+            />
+          )}
+        </div>
+      )}
 
       {canEdit && !isEditing && (
         <div className="reply-actions">

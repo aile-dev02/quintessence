@@ -1,0 +1,29 @@
+/* Memo Form Attachment Styles */
+.memo-form-attachments {
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  background: #f9fafb;
+  overflow: hidden;
+}
+
+.memo-form-attachments .attachment-section {
+  padding: 16px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.memo-form-attachments .attachment-list-section {
+  padding: 16px;
+  background: #ffffff;
+}
+
+.memo-form-attachments .attachment-section:last-child {
+  border-bottom: none;
+}
+
+/* Responsive design */
+@media (max-width: 640px) {
+  .memo-form-attachments .attachment-section,
+  .memo-form-attachments .attachment-list-section {
+    padding: 12px;
+  }
+}

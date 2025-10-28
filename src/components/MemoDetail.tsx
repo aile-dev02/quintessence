@@ -8,6 +8,7 @@ import { ReplyService } from '../services/ReplyService'
 import { AuthService } from '../services/AuthService'
 import { ReplyForm } from './common/ReplyForm'
 import { ReplyItem } from './common/ReplyItem'
+import { AttachmentList } from './common/AttachmentList'
 
 interface MemoDetailProps {
   memo: Memo
@@ -159,48 +160,8 @@ export const MemoDetail: React.FC<MemoDetailProps> = ({
     }
   }
 
-  // Handle attachment download
-  const handleAttachmentDownload = async (attachment: Attachment) => {
-    try {
-      const { blob, fileName } = await attachmentService.downloadAttachment(attachment.id)
-      
-      // Create download link
-      const url = URL.createObjectURL(blob)
-      const link = document.createElement('a')
-      link.href = url
-      link.download = fileName
-      document.body.appendChild(link)
-      link.click()
-      document.body.removeChild(link)
-      URL.revokeObjectURL(url)
-    } catch (err) {
-      console.error('Failed to download attachment:', err)
-      setError('ファイルのダウンロードに失敗しました')
-    }
-  }
-
-  // Handle attachment delete
-  const handleAttachmentDelete = async (attachment: Attachment) => {
-    if (!confirm(`「${attachment.fileName}」を削除してもよろしいですか？`)) {
-      return
-    }
-
-    try {
-      await attachmentService.deleteAttachment(attachment.id)
-      setAttachments(prev => prev.filter(a => a.id !== attachment.id))
-      
-      // Update memo's attachment IDs
-      const updatedMemo = memo
-      updatedMemo.removeAttachment(attachment.id)
-      
-      if (onMemoUpdate) {
-        onMemoUpdate(updatedMemo)
-      }
-    } catch (err) {
-      console.error('Failed to delete attachment:', err)
-      setError('添付ファイルの削除に失敗しました')
-    }
-  }
+  // These functions are now handled by AttachmentList component
+  // (removed as they're no longer needed)
 
   // Handle reply operations
   const handleReplyCreated = (reply: Reply) => {
@@ -234,36 +195,12 @@ export const MemoDetail: React.FC<MemoDetailProps> = ({
     }).format(date)
   }
 
-  // Get file icon based on type
-  const getFileIcon = (fileType: string): string => {
-    if (fileType.startsWith('image/')) return '📷'
-    if (fileType.startsWith('text/')) return '📄'
-    if (fileType === 'application/pdf') return '📕'
-    if (fileType.includes('json')) return '📋'
-    return '📎'
-  }
+  // File icons are now handled by AttachmentList component
 
-  // Render attachment preview
-  const renderAttachmentPreview = (attachment: Attachment) => {
-    if (attachment.isImage() && attachment.thumbnailUrl) {
-      return (
-        <img
-          src={attachment.thumbnailUrl}
-          alt={attachment.fileName}
-          className="w-full h-32 object-cover rounded"
-        />
-      )
-    }
-
-    return (
-      <div className="w-full h-32 bg-gray-100 rounded flex items-center justify-center">
-        <span className="text-4xl">{getFileIcon(attachment.fileType)}</span>
-      </div>
-    )
-  }
+  // Attachment preview is now handled by AttachmentList component
 
   return (
-    <div className="bg-white rounded-lg shadow-lg max-w-4xl mx-auto">
+    <div className="bg-white rounded-lg shadow-lg max-w-5xl mx-auto">
       {/* Status Messages */}
       {error && (
         <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
@@ -338,16 +275,16 @@ export const MemoDetail: React.FC<MemoDetailProps> = ({
       )}
 
       {/* Content */}
-      <div className="px-6 py-4">
+      <div className="px-8 py-6">
         {/* Tags */}
         {memo.tags.length > 0 && (
-          <div className="mb-4">
-            <h3 className="text-sm font-medium text-gray-700 mb-2">タグ</h3>
+          <div className="mb-6">
+            <h3 className="text-sm font-medium text-gray-600 mb-2">🏷️ タグ</h3>
             <div className="flex flex-wrap gap-2">
               {memo.tags.map((tag, index) => (
                 <span
                   key={index}
-                  className="px-2 py-1 bg-blue-100 text-blue-800 text-sm rounded-full"
+                  className="px-3 py-1 bg-gray-100 text-gray-700 text-sm rounded-full border border-gray-200 hover:bg-gray-200 transition-colors duration-200"
                 >
                   {tag}
                 </span>
@@ -356,34 +293,35 @@ export const MemoDetail: React.FC<MemoDetailProps> = ({
           </div>
         )}
 
-        {/* Body */}
-        <div className="mb-6">
-          <h3 className="text-sm font-medium text-gray-700 mb-2">内容</h3>
-          <div className={`prose max-w-none ${!isExpanded && memo.body.length > 500 ? 'line-clamp-6' : ''}`}>
-            <pre className="whitespace-pre-wrap text-gray-900 font-sans">
-              {memo.body}
-            </pre>
+        {/* Body - Main Content */}
+        <div className="mb-8">
+          <h3 className="text-sm font-medium text-gray-700 mb-3">📄 メインコンテンツ</h3>
+          <div className="bg-blue-50 border border-blue-100 rounded-lg p-6 shadow-sm">
+            <div className={`prose prose-lg max-w-none ${!isExpanded && memo.body.length > 500 ? 'line-clamp-8' : ''}`}>
+              <pre className="whitespace-pre-wrap text-gray-800 font-sans leading-relaxed text-base">
+                {memo.body}
+              </pre>
+            </div>
+            
+            {memo.body.length > 500 && (
+              <div className="mt-4 pt-4 border-t border-blue-200">
+                <button
+                  onClick={() => setIsExpanded(!isExpanded)}
+                  className="text-sm text-blue-700 hover:text-blue-900 underline font-medium transition-colors duration-200"
+                >
+                  {isExpanded ? '📤 折りたたむ' : '📥 全文を表示'}
+                </button>
+              </div>
+            )}
           </div>
-          
-          {memo.body.length > 500 && (
-            <button
-              onClick={() => setIsExpanded(!isExpanded)}
-              className="mt-2 text-sm text-blue-600 hover:text-blue-800 underline"
-            >
-              {isExpanded ? '折りたたむ' : 'もっと見る'}
-            </button>
-          )}
         </div>
 
         {/* Attachments */}
         {memo.attachmentIds.length > 0 && (
           <div className="mb-6">
-            <h3 className="text-sm font-medium text-gray-700 mb-3">
-              添付ファイル ({attachments.length})
-            </h3>
-            
+            <h3 className="text-sm font-medium text-gray-600 mb-3">📎 添付ファイル</h3>
             {loading ? (
-              <div className="flex items-center space-x-2 text-gray-600">
+              <div className="flex items-center space-x-2 text-gray-600 mb-4">
                 <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
                   <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                   <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
@@ -391,53 +329,18 @@ export const MemoDetail: React.FC<MemoDetailProps> = ({
                 <span className="text-sm">添付ファイルを読み込み中...</span>
               </div>
             ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {attachments.map(attachment => (
-                  <div
-                    key={attachment.id}
-                    className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow"
-                  >
-                    {/* Preview */}
-                    <div className="mb-3">
-                      {renderAttachmentPreview(attachment)}
-                    </div>
-
-                    {/* File Info */}
-                    <div className="space-y-2">
-                      <h4 className="font-medium text-gray-900 text-sm truncate" title={attachment.fileName}>
-                        {attachment.getDisplayName(30)}
-                      </h4>
-                      
-                      <div className="text-xs text-gray-500 space-y-1">
-                        <div>{attachment.getFormattedSize()}</div>
-                        <div>{attachment.getFormattedUploadedAt()}</div>
-                      </div>
-
-                      {/* Actions */}
-                      <div className="flex justify-between items-center pt-2">
-                        <button
-                          onClick={() => handleAttachmentDownload(attachment)}
-                          className="text-xs text-blue-600 hover:text-blue-800 font-medium"
-                        >
-                          ダウンロード
-                        </button>
-                        <button
-                          onClick={() => handleAttachmentDelete(attachment)}
-                          className="text-xs text-red-600 hover:text-red-800 font-medium"
-                        >
-                          削除
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
+              <AttachmentList
+                attachments={attachments}
+                gridView={true}
+                className="memo-detail-attachments"
+              />
             )}
           </div>
         )}
 
         {/* Metadata */}
-        <div className="border-t border-gray-200 pt-4">
+        <div className="border-t border-gray-200 pt-6">
+          <h3 className="text-sm font-medium text-gray-600 mb-4">ℹ️ メモ情報</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-600">
             <div>
               <div className="mb-2 flex items-center">
@@ -466,15 +369,6 @@ export const MemoDetail: React.FC<MemoDetailProps> = ({
                   <span className="font-medium">更新日時:</span> {formatDate(memo.updatedAt)}
                 </div>
               )}
-            </div>
-            
-            <div>
-              <div className="mb-2">
-                <span className="font-medium">文字数:</span> {memo.getWordCount()} 文字
-              </div>
-              <div className="mb-2">
-                <span className="font-medium">読了時間:</span> 約 {memo.getReadingTime()} 分
-              </div>
             </div>
           </div>
         </div>

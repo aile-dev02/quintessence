@@ -10,6 +10,7 @@ export class Reply implements ReplyInterface {
   content: string
   authorId: string
   authorName: string
+  attachmentIds: string[]
   createdAt: Date
   updatedAt: Date
   isEdited: boolean
@@ -20,6 +21,7 @@ export class Reply implements ReplyInterface {
     this.content = data.content || ''
     this.authorId = data.authorId || ''
     this.authorName = data.authorName || ''
+    this.attachmentIds = data.attachmentIds || []
     this.createdAt = data.createdAt || new Date()
     this.updatedAt = data.updatedAt || new Date()
     this.isEdited = data.isEdited ?? false
@@ -33,6 +35,7 @@ export class Reply implements ReplyInterface {
     content: string
     authorId: string
     authorName: string
+    attachmentIds?: string[]
   }): Reply {
     // Validate inputs
     const contentError = validateReplyContent(data.content)
@@ -47,14 +50,15 @@ export class Reply implements ReplyInterface {
       memoId: data.memoId,
       content: sanitizedContent,
       authorId: data.authorId,
-      authorName: data.authorName
+      authorName: data.authorName,
+      attachmentIds: data.attachmentIds || []
     })
   }
 
   /**
    * Update reply content with validation
    */
-  update(content: string): void {
+  update(content: string, attachmentIds?: string[]): void {
     const contentError = validateReplyContent(content)
     if (contentError) {
       throw new ValidationError(contentError)
@@ -62,9 +66,16 @@ export class Reply implements ReplyInterface {
 
     const sanitizedContent = sanitizeInput(content)
     
-    // Only update if content actually changed
-    if (this.content !== sanitizedContent) {
+    // Check if content or attachments changed
+    const contentChanged = this.content !== sanitizedContent
+    const attachmentsChanged = attachmentIds && 
+      JSON.stringify(this.attachmentIds.sort()) !== JSON.stringify(attachmentIds.sort())
+    
+    if (contentChanged || attachmentsChanged) {
       this.content = sanitizedContent
+      if (attachmentIds) {
+        this.attachmentIds = [...attachmentIds]
+      }
       this.updatedAt = new Date()
       this.isEdited = true
     }
@@ -133,10 +144,48 @@ export class Reply implements ReplyInterface {
       content: this.content,
       authorId: this.authorId,
       authorName: this.authorName,
+      attachmentIds: this.attachmentIds,
       createdAt: this.createdAt,
       updatedAt: this.updatedAt,
       isEdited: this.isEdited
     }
+  }
+
+  /**
+   * Add attachment to reply
+   */
+  addAttachment(attachmentId: string): void {
+    if (!this.attachmentIds.includes(attachmentId)) {
+      this.attachmentIds.push(attachmentId)
+      this.updatedAt = new Date()
+      this.isEdited = true
+    }
+  }
+
+  /**
+   * Remove attachment from reply
+   */
+  removeAttachment(attachmentId: string): void {
+    const index = this.attachmentIds.indexOf(attachmentId)
+    if (index > -1) {
+      this.attachmentIds.splice(index, 1)
+      this.updatedAt = new Date()
+      this.isEdited = true
+    }
+  }
+
+  /**
+   * Check if reply has attachments
+   */
+  hasAttachments(): boolean {
+    return this.attachmentIds.length > 0
+  }
+
+  /**
+   * Get attachment count
+   */
+  getAttachmentCount(): number {
+    return this.attachmentIds.length
   }
 
   /**

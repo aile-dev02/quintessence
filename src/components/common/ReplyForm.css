@@ -164,6 +164,37 @@
   outline-offset: 2px;
 }
 
+/* File attachment styles */
+.reply-form-attachments {
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  background: #f9fafb;
+  overflow: hidden;
+}
+
+.attachment-section {
+  padding: 12px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.attachment-title {
+  margin: 0 0 8px 0;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #374151;
+}
+
+.attachment-list-section {
+  padding: 12px;
+  background: #ffffff;
+}
+
+.attachment-count {
+  font-size: 0.75rem;
+  color: #059669;
+  font-weight: 500;
+}
+
 /* Responsive design */
 @media (max-width: 640px) {
   .reply-form {
@@ -192,5 +223,13 @@
   
   .reply-form-info {
     justify-content: center;
+  }
+
+  .attachment-section {
+    padding: 8px;
+  }
+
+  .attachment-list-section {
+    padding: 8px;
   }
 }

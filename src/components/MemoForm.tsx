@@ -1,8 +1,12 @@
 import React, { useState, useCallback } from 'react'
 import { Memo } from '../models/Memo'
 import { MemoService } from '../services/MemoService'
+import { Attachment } from '../models/Attachment'
 import { validateMemoTitle, validateMemoBody, validateTags } from '../utils/validation'
 import { ValidationError } from '../utils/errors'
+import { FileUpload } from './common/FileUpload'
+import { AttachmentList } from './common/AttachmentList'
+import './MemoForm.css'
 
 interface MemoFormProps {
   memo?: Memo
@@ -39,6 +43,9 @@ export const MemoForm: React.FC<MemoFormProps> = ({
     projectId: memo?.projectId || '',
     priority: memo?.priority || 'medium'
   }))
+
+  const [attachments, setAttachments] = useState<Attachment[]>([])
+  // TODO: Load existing attachments if editing
 
   const [errors, setErrors] = useState<FormErrors>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -86,6 +93,8 @@ export const MemoForm: React.FC<MemoFormProps> = ({
     try {
       let savedMemo: Memo
 
+      const attachmentIds = attachments.map(attachment => attachment.id)
+
       if (isEditing && memo) {
         // Update existing memo
         savedMemo = await memoService.updateMemo(memo.id, {
@@ -93,7 +102,8 @@ export const MemoForm: React.FC<MemoFormProps> = ({
           body: formData.body,
           tags: formData.tags,
           projectId: formData.projectId || undefined,
-          priority: formData.priority
+          priority: formData.priority,
+          attachmentIds
         })
       } else {
         // Create new memo
@@ -102,7 +112,8 @@ export const MemoForm: React.FC<MemoFormProps> = ({
           body: formData.body,
           tags: formData.tags,
           projectId: formData.projectId || undefined,
-          priority: formData.priority
+          priority: formData.priority,
+          attachmentIds
         })
       }
 
@@ -117,6 +128,16 @@ export const MemoForm: React.FC<MemoFormProps> = ({
     } finally {
       setIsSubmitting(false)
     }
+  }
+
+  // Handle file upload completion
+  const handleFilesUploaded = (newAttachments: Attachment[]) => {
+    setAttachments(prev => [...prev, ...newAttachments])
+  }
+
+  // Handle file removal
+  const handleRemoveAttachment = (attachmentId: string) => {
+    setAttachments(prev => prev.filter(attachment => attachment.id !== attachmentId))
   }
 
   // Handle input changes
@@ -311,6 +332,33 @@ export const MemoForm: React.FC<MemoFormProps> = ({
           <p className="mt-1 text-sm text-gray-500">
             メモを特定のプロジェクトに関連付けできます
           </p>
+        </div>
+
+        {/* File Attachments */}
+        <div className="memo-form-attachments">
+          <div className="attachment-section">
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              ファイル添付
+            </label>
+            <FileUpload
+              onFilesUploaded={handleFilesUploaded}
+              maxFiles={10}
+              disabled={isSubmitting}
+            />
+          </div>
+          
+          {attachments.length > 0 && (
+            <div className="attachment-list-section mt-4">
+              <h4 className="text-sm font-medium text-gray-700 mb-2">
+                添付ファイル ({attachments.length}個)
+              </h4>
+              <AttachmentList
+                attachments={attachments}
+                onRemove={handleRemoveAttachment}
+                showRemoveButton={true}
+              />
+            </div>
+          )}
         </div>
 
         {/* General Error */}

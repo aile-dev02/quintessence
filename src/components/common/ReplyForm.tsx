@@ -3,7 +3,10 @@ import { ReplyService } from '../../services/ReplyService'
 import { AuthService } from '../../services/AuthService'
 import { NotificationService } from '../../services/NotificationService'
 import { Reply } from '../../models/Reply'
+import { Attachment } from '../../models/Attachment'
 import { MentionInput } from './MentionInput'
+import { FileUpload } from './FileUpload'
+import { AttachmentList } from './AttachmentList'
 import { getMentionedUserIds } from '../../utils/mentions'
 import type { CreateReplyRequest } from '../../types'
 import './ReplyForm.css'
@@ -25,6 +28,8 @@ export const ReplyForm: React.FC<ReplyFormProps> = ({
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [mentionedUserIds, setMentionedUserIds] = useState<string[]>([])
+  const [attachments, setAttachments] = useState<Attachment[]>([])
+  const [showFileUpload, setShowFileUpload] = useState(false)
 
   const replyService = ReplyService.getInstance()
   const authService = AuthService.getInstance()
@@ -49,7 +54,8 @@ export const ReplyForm: React.FC<ReplyFormProps> = ({
 
     try {
       const createRequest: CreateReplyRequest = {
-        content: content.trim()
+        content: content.trim(),
+        attachmentIds: attachments.map(att => att.id)
       }
 
       const newReply = await replyService.createReply(memoId, createRequest)
@@ -81,12 +87,24 @@ export const ReplyForm: React.FC<ReplyFormProps> = ({
       onReplyCreated(newReply)
       setContent('')
       setMentionedUserIds([])
+      setAttachments([])
+      setShowFileUpload(false)
     } catch (error) {
       console.error('Error creating reply:', error)
       setError(error instanceof Error ? error.message : '返信の投稿に失敗しました')
     } finally {
       setIsLoading(false)
     }
+  }
+
+  // Handle file upload completion
+  const handleFilesUploaded = (newAttachments: Attachment[]) => {
+    setAttachments(prev => [...prev, ...newAttachments])
+  }
+
+  // Handle file removal
+  const handleRemoveAttachment = (attachmentId: string) => {
+    setAttachments(prev => prev.filter(attachment => attachment.id !== attachmentId))
   }
 
   if (!currentUser) {
@@ -116,26 +134,56 @@ export const ReplyForm: React.FC<ReplyFormProps> = ({
           className="reply-form-textarea"
           onMentions={setMentionedUserIds}
         />
+
+        {/* ファイルアップロード */}
+        <div className="reply-form-attachments">
+          <div className="attachment-section">
+            <h4 className="attachment-title">ファイル添付</h4>
+            <FileUpload
+              onFilesUploaded={handleFilesUploaded}
+              maxFiles={5}
+              disabled={isLoading}
+            />
+          </div>
+          
+          {attachments.length > 0 && (
+            <div className="attachment-list-section">
+              <AttachmentList
+                attachments={attachments}
+                onRemove={handleRemoveAttachment}
+                showRemoveButton={true}
+              />
+            </div>
+          )}
+        </div>
         
         <div className="reply-form-footer">
           <div className="reply-form-info">
             <span className="character-count">
               {content.length}/1000文字
             </span>
+            {attachments.length > 0 && (
+              <span className="attachment-count">
+                • {attachments.length}個のファイル添付
+              </span>
+            )}
           </div>
           
           <div className="reply-form-actions">
             <button
               type="button"
-              onClick={() => setContent('')}
-              disabled={isLoading || !content}
+              onClick={() => {
+                setContent('')
+                setAttachments([])
+              }}
+              disabled={isLoading || (!content && attachments.length === 0)}
               className="btn btn-secondary"
             >
               クリア
             </button>
             <button
               type="submit"
-              disabled={isLoading || !content.trim()}
+              disabled={isLoading || (!content.trim() && attachments.length === 0)}
               className="btn btn-primary"
             >
               {isLoading ? '投稿中...' : '返信を投稿'}

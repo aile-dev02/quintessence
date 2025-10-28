@@ -242,3 +242,48 @@
     flex: 1;
   }
 }
+
+/* Reply attachments */
+.reply-attachments {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid #f3f4f6;
+}
+
+.reply-attachments-loading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #6b7280;
+  font-size: 0.875rem;
+}
+
+.reply-attachment-list {
+  margin-top: 0;
+}
+
+.reply-attachment-list .attachment-list-header {
+  margin-bottom: 8px;
+}
+
+.reply-attachment-list .attachment-count {
+  font-size: 0.8rem;
+  color: #6b7280;
+}
+
+/* Responsive adjustments for attachments */
+@media (max-width: 640px) {
+  .reply-attachments {
+    margin-top: 8px;
+    padding-top: 8px;
+  }
+  
+  .reply-attachment-list .attachment-items.image-grid {
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 8px;
+  }
+  
+  .reply-attachment-list .attachment-items.image-grid .attachment-preview {
+    height: 80px;
+  }
+}

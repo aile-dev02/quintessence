@@ -100,6 +100,47 @@ export const validateFileType = (fileType: string, allowedTypes: string[] = [
   return null
 }
 
+export const validateReplyFileType = (fileType: string): string | null => {
+  const allowedTypes = [
+    // Images
+    'image/jpeg',
+    'image/jpg', 
+    'image/png',
+    'image/gif',
+    'image/webp',
+    'image/bmp',
+    'image/svg+xml',
+    // Documents
+    'text/plain',
+    'text/csv',
+    'application/json',
+    'application/pdf',
+    // Excel files
+    'application/vnd.ms-excel',
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    'application/vnd.ms-excel.sheet.macroEnabled.12',
+    'application/vnd.ms-excel.template.macroEnabled.12',
+    // CSV alternatives
+    'text/comma-separated-values',
+    'application/csv'
+  ]
+  
+  if (!allowedTypes.includes(fileType)) {
+    return '対応していないファイル形式です。画像、CSV、Excelファイルのみアップロード可能です'
+  }
+  
+  return null
+}
+
+export const validateReplyFileSize = (fileSize: number): string | null => {
+  const maxSize = 10 * 1024 * 1024 // 10MB for reply attachments
+  if (fileSize > maxSize) {
+    return 'ファイルサイズは10MB以内にしてください'
+  }
+  
+  return null
+}
+
 export const validateProjectName = (name: string): string | null => {
   if (!name || name.trim().length === 0) {
     return 'プロジェクト名は必須です'

@@ -33,6 +33,7 @@ export interface Reply {
   content: string
   authorId: string
   authorName: string
+  attachmentIds: string[]
   createdAt: Date
   updatedAt: Date
   isEdited: boolean
@@ -103,6 +104,7 @@ export interface CreateMemoRequest {
   tags?: string[]
   projectId?: string
   priority?: Priority
+  attachmentIds?: string[]
 }
 
 export interface UpdateMemoRequest {
@@ -112,14 +114,17 @@ export interface UpdateMemoRequest {
   projectId?: string
   priority?: Priority
   status?: MemoStatus
+  attachmentIds?: string[]
 }
 
 export interface CreateReplyRequest {
   content: string
+  attachmentIds?: string[]
 }
 
 export interface UpdateReplyRequest {
   content: string
+  attachmentIds?: string[]
 }
 
 export interface MemoFilters {

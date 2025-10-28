@@ -233,6 +233,7 @@ export class MemoService {
         title: request.title,
         body: request.body,
         tags: request.tags,
+        attachmentIds: request.attachmentIds,
         projectId: request.projectId,
         priority: request.priority,
         status: request.status
