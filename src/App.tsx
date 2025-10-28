@@ -6,9 +6,11 @@ import { MemoList } from './components/MemoList'
 import { MemoDetail } from './components/MemoDetail'
 import { SearchAndFilterBar } from './components/SearchAndFilterBar'
 import { SyncStatusBar } from './components/SyncStatusBar'
+import { NotificationBell } from './components/common/NotificationBell'
 import { MemoService } from './services/MemoService'
 import { AuthService } from './services/AuthService'
 import { Memo } from './models/Memo'
+import { Notification } from './models/Notification'
 import { useSync } from './hooks/useSync'
 
 // View types for navigation
@@ -47,6 +49,18 @@ function MainApp() {
   // 認証サービス
   const authService = AuthService.getInstance()
   const currentUser = authService.getCurrentUser()
+
+  // Handle notification click
+  const handleNotificationClick = (notification: Notification) => {
+    // Navigate to the related memo or reply
+    if (notification.relatedType === 'memo') {
+      setState(prev => ({
+        ...prev,
+        selectedMemoId: notification.relatedId,
+        currentView: 'detail'
+      }))
+    }
+  }
 
   const handleLogout = async () => {
     if (confirm('ログアウトしますか？')) {
@@ -251,13 +265,14 @@ function MainApp() {
               <h1 className="text-xl font-semibold text-gray-900">TestMemo</h1>
             </div>
             
-            {/* User info and Sync Status */}
+            {/* User info and Actions */}
             <div className="flex items-center space-x-4">
               {currentUser && (
                 <div className="flex items-center space-x-3">
                   <span className="text-sm text-gray-700">
                     こんにちは、{currentUser.username}さん
                   </span>
+                  <NotificationBell onNotificationClick={handleNotificationClick} />
                   <button
                     onClick={handleLogout}
                     className="inline-flex items-center px-3 py-1 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"

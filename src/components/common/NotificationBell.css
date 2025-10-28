@@ -1,0 +1,157 @@
+.notification-bell {
+  position: relative;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.notification-bell:hover {
+  background: #f3f4f6;
+}
+
+.notification-bell:focus {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+
+.bell-icon {
+  font-size: 1.25rem;
+  color: #6b7280;
+  transition: color 0.2s ease;
+}
+
+.notification-bell:hover .bell-icon {
+  color: #374151;
+}
+
+.notification-count {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  background: #ef4444;
+  color: white;
+  font-size: 0.7rem;
+  font-weight: 600;
+  min-width: 18px;
+  height: 18px;
+  border-radius: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 4px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+  animation: fadeIn 0.3s ease-out;
+}
+
+/* New notification animation */
+.notification-bell.new-notification {
+  animation: bellShake 0.6s ease-in-out;
+}
+
+.notification-bell.new-notification .bell-icon {
+  color: #3b82f6;
+}
+
+.notification-bell.new-notification .notification-count {
+  animation: pulse 0.6s ease-in-out;
+}
+
+@keyframes bellShake {
+  0%, 100% {
+    transform: rotate(0deg);
+  }
+  10%, 30%, 50%, 70%, 90% {
+    transform: rotate(-5deg);
+  }
+  20%, 40%, 60%, 80% {
+    transform: rotate(5deg);
+  }
+}
+
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+  }
+  50% {
+    transform: scale(1.2);
+    box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Active state when panel is open */
+.notification-bell:active,
+.notification-bell[aria-expanded="true"] {
+  background: #e5e7eb;
+}
+
+.notification-bell:active .bell-icon,
+.notification-bell[aria-expanded="true"] .bell-icon {
+  color: #3b82f6;
+}
+
+/* Responsive design */
+@media (max-width: 640px) {
+  .notification-bell {
+    padding: 6px;
+  }
+  
+  .bell-icon {
+    font-size: 1.125rem;
+  }
+  
+  .notification-count {
+    min-width: 16px;
+    height: 16px;
+    font-size: 0.65rem;
+    top: 2px;
+    right: 2px;
+  }
+}
+
+/* High contrast mode support */
+@media (prefers-contrast: high) {
+  .notification-bell {
+    border: 1px solid currentColor;
+  }
+  
+  .notification-count {
+    border: 2px solid white;
+  }
+}
+
+/* Reduced motion support */
+@media (prefers-reduced-motion: reduce) {
+  .notification-bell.new-notification {
+    animation: none;
+  }
+  
+  .notification-bell.new-notification .notification-count {
+    animation: none;
+  }
+  
+  .notification-count {
+    animation: none;
+  }
+}

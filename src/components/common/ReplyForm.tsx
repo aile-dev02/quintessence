@@ -1,25 +1,34 @@
 import React, { useState } from 'react'
 import { ReplyService } from '../../services/ReplyService'
 import { AuthService } from '../../services/AuthService'
+import { NotificationService } from '../../services/NotificationService'
 import { Reply } from '../../models/Reply'
+import { MentionInput } from './MentionInput'
+import { getMentionedUserIds } from '../../utils/mentions'
 import type { CreateReplyRequest } from '../../types'
 import './ReplyForm.css'
 
 interface ReplyFormProps {
   memoId: string
+  memoAuthorId: string
+  memoTitle: string
   onReplyCreated: (reply: Reply) => void
 }
 
 export const ReplyForm: React.FC<ReplyFormProps> = ({
   memoId,
+  memoAuthorId,
+  memoTitle,
   onReplyCreated
 }) => {
   const [content, setContent] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [mentionedUserIds, setMentionedUserIds] = useState<string[]>([])
 
   const replyService = ReplyService.getInstance()
   const authService = AuthService.getInstance()
+  const notificationService = NotificationService.getInstance()
   const currentUser = authService.getCurrentUser()
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -44,8 +53,34 @@ export const ReplyForm: React.FC<ReplyFormProps> = ({
       }
 
       const newReply = await replyService.createReply(memoId, createRequest)
+      
+      // Create notifications for mentions
+      if (mentionedUserIds.length > 0) {
+        await notificationService.createMentionNotifications(
+          mentionedUserIds,
+          currentUser.id,
+          currentUser.username,
+          newReply.id,
+          'reply',
+          content.trim()
+        )
+      }
+
+      // Create reply notification for memo author (if not self and not already mentioned)
+      if (memoAuthorId !== currentUser.id && !mentionedUserIds.includes(memoAuthorId)) {
+        await notificationService.createReplyNotification(
+          memoAuthorId,
+          currentUser.id,
+          currentUser.username,
+          memoId,
+          memoTitle,
+          content.trim()
+        )
+      }
+
       onReplyCreated(newReply)
       setContent('')
+      setMentionedUserIds([])
     } catch (error) {
       console.error('Error creating reply:', error)
       setError(error instanceof Error ? error.message : '返信の投稿に失敗しました')
@@ -72,14 +107,14 @@ export const ReplyForm: React.FC<ReplyFormProps> = ({
       </div>
 
       <div className="reply-form-content">
-        <textarea
+        <MentionInput
           value={content}
-          onChange={(e) => setContent(e.target.value)}
-          placeholder="返信内容を入力してください..."
+          onChange={setContent}
+          placeholder="返信内容を入力してください... (@username でメンション)"
           rows={4}
           disabled={isLoading}
           className="reply-form-textarea"
-          maxLength={1000}
+          onMentions={setMentionedUserIds}
         />
         
         <div className="reply-form-footer">

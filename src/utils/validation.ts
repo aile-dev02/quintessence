@@ -217,3 +217,60 @@ export const validateReplyContent = (content: string): string | null => {
   
   return null
 }
+
+// Notification validation functions
+export const validateNotificationData = (data: {
+  title: string
+  message: string
+  type: string
+  relatedId: string
+  relatedType: string
+  fromUserId: string
+  toUserId: string
+}): { isValid: boolean; errors: string[] } => {
+  const errors: string[] = []
+  
+  // Validate title
+  if (!data.title || data.title.trim().length === 0) {
+    errors.push('通知タイトルは必須です')
+  } else if (data.title.length > 200) {
+    errors.push('通知タイトルは200文字以内で入力してください')
+  }
+  
+  // Validate message
+  if (!data.message || data.message.trim().length === 0) {
+    errors.push('通知メッセージは必須です')
+  } else if (data.message.length > 500) {
+    errors.push('通知メッセージは500文字以内で入力してください')
+  }
+  
+  // Validate type
+  const validTypes = ['mention', 'reply', 'memo_update', 'system']
+  if (!validTypes.includes(data.type)) {
+    errors.push('無効な通知タイプです')
+  }
+  
+  // Validate relatedType
+  const validRelatedTypes = ['memo', 'reply']
+  if (!validRelatedTypes.includes(data.relatedType)) {
+    errors.push('無効な関連タイプです')
+  }
+  
+  // Validate IDs
+  if (!data.relatedId || data.relatedId.trim().length === 0) {
+    errors.push('関連IDは必須です')
+  }
+  
+  if (!data.fromUserId || data.fromUserId.trim().length === 0) {
+    errors.push('送信者IDは必須です')
+  }
+  
+  if (!data.toUserId || data.toUserId.trim().length === 0) {
+    errors.push('受信者IDは必須です')
+  }
+  
+  return {
+    isValid: errors.length === 0,
+    errors
+  }
+}

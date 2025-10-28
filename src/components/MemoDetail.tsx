@@ -515,6 +515,8 @@ export const MemoDetail: React.FC<MemoDetailProps> = ({
           <div className="mb-6">
             <ReplyForm
               memoId={memo.id}
+              memoAuthorId={memo.authorId}
+              memoTitle={memo.title}
               onReplyCreated={handleReplyCreated}
             />
           </div>

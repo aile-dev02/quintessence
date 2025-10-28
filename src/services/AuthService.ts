@@ -255,6 +255,28 @@ export class AuthService {
     return users.map(userData => User.fromJSON(userData))
   }
 
+  /**
+   * Get user by username
+   */
+  getUserByUsername(username: string): User | null {
+    const users = this.getStoredUsers()
+    const userData = users.find(user => user.username.toLowerCase() === username.toLowerCase())
+    return userData ? User.fromJSON(userData) : null
+  }
+
+  /**
+   * Search users by username
+   */
+  searchUsers(query: string, limit: number = 10): User[] {
+    const users = this.getStoredUsers()
+    const lowerQuery = query.toLowerCase()
+    
+    return users
+      .filter(user => user.username.toLowerCase().includes(lowerQuery))
+      .slice(0, limit)
+      .map(userData => User.fromJSON(userData))
+  }
+
   // Private helper methods
 
   private getStoredUsers(): any[] {

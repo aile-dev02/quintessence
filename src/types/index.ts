@@ -226,3 +226,49 @@ export interface UploadProgress {
   status: 'uploading' | 'processing' | 'complete' | 'error'
   error?: string
 }
+
+// Mention and Notification types
+export interface Mention {
+  id: string
+  userId: string
+  username: string
+  position: {
+    start: number
+    end: number
+  }
+}
+
+export interface Notification {
+  id: string
+  type: 'mention' | 'reply' | 'memo_update' | 'system'
+  title: string
+  message: string
+  relatedId: string // memoId, replyId, etc.
+  relatedType: 'memo' | 'reply'
+  fromUserId: string
+  fromUsername: string
+  toUserId: string
+  createdAt: Date
+  readAt: Date | null
+  isRead: boolean
+  data?: Record<string, unknown> // Additional context data
+}
+
+export interface CreateNotificationRequest {
+  type: Notification['type']
+  title: string
+  message: string
+  relatedId: string
+  relatedType: Notification['relatedType']
+  fromUserId: string
+  fromUsername: string
+  toUserId: string
+  data?: Record<string, unknown>
+}
+
+export interface NotificationFilters {
+  type?: Notification['type']
+  isRead?: boolean
+  dateFrom?: Date
+  dateTo?: Date
+}
