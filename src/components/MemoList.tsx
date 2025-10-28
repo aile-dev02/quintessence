@@ -270,7 +270,10 @@ export const MemoList: React.FC<MemoListProps> = ({
         <div className="flex flex-col lg:flex-row gap-4">
           {/* Status Filter */}
           <div className="flex-1">
-            <label className="block text-sm font-medium text-gray-700 mb-2">ステータス</label>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              ステータス
+              <span className="ml-1 text-xs text-gray-500" title="メモの状態でフィルタリング">ℹ️</span>
+            </label>
             <select
               value={statusFilter}
               onChange={(e) => {
@@ -280,9 +283,9 @@ export const MemoList: React.FC<MemoListProps> = ({
               className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="all">すべて</option>
-              <option value="draft">下書き</option>
-              <option value="published">公開済み</option>
-              <option value="archived">アーカイブ</option>
+              <option value="draft">🟡 下書き（作成中）</option>
+              <option value="published">🟢 公開済み（完成）</option>
+              <option value="archived">⚫ アーカイブ（保存済み）</option>
             </select>
           </div>
 

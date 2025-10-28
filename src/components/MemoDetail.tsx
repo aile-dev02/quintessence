@@ -45,19 +45,26 @@ const PRIORITY_LABELS = {
 }
 
 export const MemoDetail: React.FC<MemoDetailProps> = ({
-  memo,
+  memo: initialMemo,
   onEdit,
   onDelete,
   onClose,
   onMemoUpdate
 }) => {
+  const [memo, setMemo] = useState<Memo>(initialMemo)
   const [attachments, setAttachments] = useState<Attachment[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [successMessage, setSuccessMessage] = useState<string | null>(null)
   const [isExpanded, setIsExpanded] = useState(false)
 
   const memoService = useMemo(() => MemoService.getInstance(), [])
   const attachmentService = useMemo(() => new AttachmentService(), [])
+
+  // Update local memo state when initialMemo changes
+  useEffect(() => {
+    setMemo(initialMemo)
+  }, [initialMemo])
 
   // Load attachments
   useEffect(() => {
@@ -80,22 +87,39 @@ export const MemoDetail: React.FC<MemoDetailProps> = ({
   }, [memo.id, memo.attachmentIds, attachmentService])
 
   // Handle memo status change
-  const handleStatusChange = async (newStatus: 'published' | 'archived') => {
+  const handleStatusChange = async (newStatus: 'published' | 'archived' | 'draft') => {
     try {
+      setLoading(true)
       let updatedMemo: Memo
       
       if (newStatus === 'published') {
         updatedMemo = await memoService.publishMemo(memo.id)
-      } else {
+      } else if (newStatus === 'archived') {
         updatedMemo = await memoService.archiveMemo(memo.id)
+      } else {
+        // For draft status, update memo directly
+        updatedMemo = await memoService.updateMemo(memo.id, { status: 'draft' })
       }
 
+      // Update local state immediately for instant feedback
+      setMemo(updatedMemo)
+
+      // Notify parent component of the update
       if (onMemoUpdate) {
         onMemoUpdate(updatedMemo)
       }
+
+      // Clear any previous errors and show success message
+      setError(null)
+      setSuccessMessage(`ステータスを「${STATUS_LABELS[newStatus]}」に変更しました`)
+      
+      // Clear success message after 3 seconds
+      setTimeout(() => setSuccessMessage(null), 3000)
     } catch (err) {
       console.error('Failed to update memo status:', err)
       setError('ステータスの更新に失敗しました')
+    } finally {
+      setLoading(false)
     }
   }
 
@@ -196,6 +220,29 @@ export const MemoDetail: React.FC<MemoDetailProps> = ({
 
   return (
     <div className="bg-white rounded-lg shadow-lg max-w-4xl mx-auto">
+      {/* Status Messages */}
+      {error && (
+        <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+          <div className="flex items-center">
+            <svg className="h-5 w-5 text-red-400 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.502 0L4.232 15.5c-.77.833.192 2.5 1.732 2.5z" />
+            </svg>
+            <span className="text-red-800">{error}</span>
+          </div>
+        </div>
+      )}
+
+      {successMessage && (
+        <div className="mb-4 p-4 bg-green-50 border border-green-200 rounded-lg">
+          <div className="flex items-center">
+            <svg className="h-5 w-5 text-green-400 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <span className="text-green-800">{successMessage}</span>
+          </div>
+        </div>
+      )}
+
       {/* Header */}
       <div className="px-6 py-4 border-b border-gray-200">
         <div className="flex items-start justify-between">
@@ -359,6 +406,15 @@ export const MemoDetail: React.FC<MemoDetailProps> = ({
                 </span>
               </div>
               <div className="mb-2">
+                <span className="font-medium">ステータス:</span> 
+                <span className={`ml-1 px-2 py-1 rounded text-xs font-medium ${STATUS_COLORS[memo.status]}`}>
+                  {STATUS_LABELS[memo.status]}
+                </span>
+              </div>
+              <div className="mb-2 text-xs text-gray-500">
+                {STATUS_DESCRIPTIONS[memo.status]}
+              </div>
+              <div className="mb-2">
                 <span className="font-medium">作成日時:</span> {formatDate(memo.createdAt)}
               </div>
               {memo.isModified() && (
@@ -374,6 +430,27 @@ export const MemoDetail: React.FC<MemoDetailProps> = ({
               </div>
               <div className="mb-2">
                 <span className="font-medium">読了時間:</span> 約 {memo.getReadingTime()} 分
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Status Help Section */}
+        <div className="border-t border-gray-200 pt-4">
+          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
+            <h4 className="text-sm font-medium text-blue-900 mb-2">💡 ステータスについて</h4>
+            <div className="text-xs text-blue-800 space-y-1">
+              <div className="flex items-center">
+                <span className="inline-block w-3 h-3 bg-yellow-400 rounded-full mr-2"></span>
+                <strong>下書き:</strong> 作成中のメモ。完成したら「公開」にしましょう。
+              </div>
+              <div className="flex items-center">
+                <span className="inline-block w-3 h-3 bg-green-400 rounded-full mr-2"></span>
+                <strong>公開済み:</strong> 完成したメモ。アクティブなコンテンツとして表示されます。
+              </div>
+              <div className="flex items-center">
+                <span className="inline-block w-3 h-3 bg-gray-400 rounded-full mr-2"></span>
+                <strong>アーカイブ:</strong> 削除せずに保存。普段の一覧には表示されません。
               </div>
             </div>
           </div>
@@ -409,6 +486,16 @@ export const MemoDetail: React.FC<MemoDetailProps> = ({
                 title="メモを保存したまま、普段の表示から隠します"
               >
                 アーカイブ
+              </button>
+            )}
+
+            {memo.status !== 'draft' && (
+              <button
+                onClick={() => handleStatusChange('draft' as any)}
+                className="px-4 py-2 bg-yellow-600 text-white rounded-md hover:bg-yellow-700 focus:outline-none focus:ring-2 focus:ring-yellow-500"
+                title="メモを下書き状態に戻します"
+              >
+                下書きに戻す
               </button>
             )}
           </div>

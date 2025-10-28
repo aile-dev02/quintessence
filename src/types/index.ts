@@ -100,6 +100,7 @@ export interface UpdateMemoRequest {
   tags?: string[]
   projectId?: string
   priority?: Priority
+  status?: MemoStatus
 }
 
 export interface MemoFilters {

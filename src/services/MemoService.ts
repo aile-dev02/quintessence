@@ -234,7 +234,8 @@ export class MemoService {
         body: request.body,
         tags: request.tags,
         projectId: request.projectId,
-        priority: request.priority
+        priority: request.priority,
+        status: request.status
       })
 
       // Store memo in LocalStorage (immediate backup)

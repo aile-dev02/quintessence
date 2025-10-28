@@ -360,6 +360,14 @@ function MainApp() {
             onEdit={() => handleMemoEdit(currentMemo)}
             onDelete={() => handleMemoDelete(currentMemo)}
             onClose={handleBackToList}
+            onMemoUpdate={(updatedMemo) => {
+              // Update the memo in the state
+              setState(prev => ({
+                ...prev,
+                memos: prev.memos.map(m => m.id === updatedMemo.id ? updatedMemo : m),
+                filteredMemos: prev.filteredMemos.map(m => m.id === updatedMemo.id ? updatedMemo : m)
+              }))
+            }}
           />
         )}
 
