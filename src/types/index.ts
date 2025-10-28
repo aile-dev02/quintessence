@@ -1,6 +1,16 @@
 export type MemoStatus = 'draft' | 'published' | 'archived'
 export type Priority = 'low' | 'medium' | 'high' | 'critical'
 
+export interface User {
+  id: string
+  username: string
+  email: string
+  passwordHash: string
+  createdAt: Date
+  lastLoginAt: Date | null
+  isActive: boolean
+}
+
 export interface Memo {
   id: string
   title: string
@@ -10,6 +20,8 @@ export interface Memo {
   status: MemoStatus
   priority: Priority
   projectId: string | null
+  authorId: string
+  authorName: string
   createdAt: Date
   updatedAt: Date
   linkedCards: string[]
@@ -52,6 +64,25 @@ export interface Tag {
   category: string
   usageCount: number
   lastUsed: Date
+}
+
+// Authentication types
+export interface RegisterRequest {
+  username: string
+  email: string
+  password: string
+}
+
+export interface LoginRequest {
+  email: string
+  password: string
+}
+
+export interface AuthState {
+  isAuthenticated: boolean
+  currentUser: User | null
+  isLoading: boolean
+  error: string | null
 }
 
 // Request/Response types for services

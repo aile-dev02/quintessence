@@ -311,6 +311,8 @@ export class FirebaseService {
         status: data.status || 'draft',
         attachmentIds: data.attachmentIds || [],
         linkedCards: data.linkedCards || [],
+        authorId: data.authorId || '',
+        authorName: data.authorName || '',
         createdAt: new Date(data.createdAt),
         updatedAt: new Date(data.updatedAt)
       }

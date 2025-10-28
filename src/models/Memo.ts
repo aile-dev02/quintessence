@@ -18,6 +18,8 @@ export class Memo implements MemoInterface {
   status: MemoStatus
   priority: Priority
   projectId: string | null
+  authorId: string
+  authorName: string
   createdAt: Date
   updatedAt: Date
   linkedCards: string[]
@@ -31,6 +33,8 @@ export class Memo implements MemoInterface {
     this.status = data.status || 'draft'
     this.priority = data.priority || 'medium'
     this.projectId = data.projectId || null
+    this.authorId = data.authorId || ''
+    this.authorName = data.authorName || ''
     this.createdAt = data.createdAt || new Date()
     this.updatedAt = data.updatedAt || new Date()
     this.linkedCards = data.linkedCards || []
@@ -45,6 +49,8 @@ export class Memo implements MemoInterface {
     tags?: string[]
     projectId?: string
     priority?: Priority
+    authorId: string
+    authorName: string
   }): Memo {
     // Validate inputs
     const titleError = validateMemoTitle(data.title)
@@ -75,7 +81,9 @@ export class Memo implements MemoInterface {
       tags: sanitizedTags,
       projectId: data.projectId || null,
       priority: data.priority || 'medium',
-      status: 'draft'
+      status: 'draft',
+      authorId: data.authorId,
+      authorName: data.authorName
     })
   }
 
@@ -249,6 +257,8 @@ export class Memo implements MemoInterface {
       status: this.status,
       priority: this.priority,
       projectId: this.projectId,
+      authorId: this.authorId,
+      authorName: this.authorName,
       createdAt: this.createdAt,
       updatedAt: this.updatedAt,
       linkedCards: [...this.linkedCards]
@@ -278,7 +288,9 @@ export class Memo implements MemoInterface {
       attachmentIds: [...this.attachmentIds],
       status: 'draft', // Reset to draft
       priority: this.priority,
-      projectId: this.projectId
+      projectId: this.projectId,
+      authorId: this.authorId,
+      authorName: this.authorName
     })
   }
 

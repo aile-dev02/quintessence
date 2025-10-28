@@ -9,6 +9,7 @@ import { Memo } from '../models/Memo'
 import { LocalStorageService } from './storage/LocalStorageService'
 import { IndexedDBService } from './storage/IndexedDBService'
 import { FirebaseService, type SyncStatus } from './FirebaseService'
+import { AuthService } from './AuthService'
 import { ValidationError, StorageError } from '../utils/errors'
 import { isFirebaseConfigured } from '../config/firebase'
 
@@ -105,12 +106,22 @@ export class MemoService {
    */
   async createMemo(request: CreateMemoRequest): Promise<Memo> {
     try {
+      // Get current user information
+      const authService = AuthService.getInstance()
+      const currentUser = authService.getCurrentUser()
+      
+      if (!currentUser) {
+        throw new ValidationError('メモを作成するにはログインが必要です')
+      }
+
       const memo = Memo.create({
         title: request.title,
         body: request.body,
         tags: request.tags || [],
         projectId: request.projectId,
-        priority: request.priority || 'medium'
+        priority: request.priority || 'medium',
+        authorId: currentUser.id,
+        authorName: currentUser.username
       })
 
       // Store memo in LocalStorage (immediate backup)

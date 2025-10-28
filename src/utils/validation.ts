@@ -141,3 +141,67 @@ export const sanitizeInput = (input: string): string => {
 export const normalizeTag = (tag: string): string => {
   return tag.toLowerCase().trim()
 }
+
+// User validation functions
+export const validateUsername = (username: string): string | null => {
+  if (!username || username.trim().length === 0) {
+    return 'ユーザー名は必須です'
+  }
+  
+  if (username.length < 3) {
+    return 'ユーザー名は3文字以上で入力してください'
+  }
+  
+  if (username.length > 20) {
+    return 'ユーザー名は20文字以内で入力してください'
+  }
+  
+  // Allow alphanumeric, Japanese, hyphens, and underscores
+  const usernameRegex = /^[a-zA-Z0-9\u3040-\u309F\u30A0-\u30FF\u4E00-\u9FAF\-_]+$/
+  if (!usernameRegex.test(username)) {
+    return 'ユーザー名に使用できない文字が含まれています'
+  }
+  
+  return null
+}
+
+export const validateEmail = (email: string): string | null => {
+  if (!email || email.trim().length === 0) {
+    return 'メールアドレスは必須です'
+  }
+  
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+  if (!emailRegex.test(email)) {
+    return '有効なメールアドレスを入力してください'
+  }
+  
+  if (email.length > 100) {
+    return 'メールアドレスは100文字以内で入力してください'
+  }
+  
+  return null
+}
+
+export const validatePassword = (password: string): string | null => {
+  if (!password || password.length === 0) {
+    return 'パスワードは必須です'
+  }
+  
+  if (password.length < 6) {
+    return 'パスワードは6文字以上で入力してください'
+  }
+  
+  if (password.length > 50) {
+    return 'パスワードは50文字以内で入力してください'
+  }
+  
+  // Check for at least one letter and one number
+  const hasLetter = /[a-zA-Z]/.test(password)
+  const hasNumber = /[0-9]/.test(password)
+  
+  if (!hasLetter || !hasNumber) {
+    return 'パスワードは英字と数字を両方含む必要があります'
+  }
+  
+  return null
+}

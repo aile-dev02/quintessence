@@ -1,11 +1,13 @@
 import { useState, useCallback, useEffect } from 'react'
-import { PlusIcon } from '@heroicons/react/24/outline'
+import { PlusIcon, ArrowRightOnRectangleIcon } from '@heroicons/react/24/outline'
+import { AuthWrapper } from './components/AuthWrapper'
 import { MemoForm } from './components/MemoForm'
 import { MemoList } from './components/MemoList'
 import { MemoDetail } from './components/MemoDetail'
 import { SearchAndFilterBar } from './components/SearchAndFilterBar'
 import { SyncStatusBar } from './components/SyncStatusBar'
 import { MemoService } from './services/MemoService'
+import { AuthService } from './services/AuthService'
 import { Memo } from './models/Memo'
 import { useSync } from './hooks/useSync'
 
@@ -25,7 +27,7 @@ interface AppState {
   bulkProcessing: boolean
 }
 
-function App() {
+function MainApp() {
   const [state, setState] = useState<AppState>({
     currentView: 'list',
     selectedMemoId: null,
@@ -41,6 +43,18 @@ function App() {
 
   // 同期フックを使用
   const { syncState, syncNow, clearError } = useSync()
+  
+  // 認証サービス
+  const authService = AuthService.getInstance()
+  const currentUser = authService.getCurrentUser()
+
+  const handleLogout = async () => {
+    if (confirm('ログアウトしますか？')) {
+      await authService.logout()
+      // AuthWrapperが自動的に認証状態を更新し、ログイン画面にリダイレクト
+      window.location.reload()
+    }
+  }
 
   const loadMemos = useCallback(async () => {
     try {
@@ -74,6 +88,45 @@ function App() {
   useEffect(() => {
     loadMemos()
   }, [loadMemos])
+
+  // Migrate existing memos to include author information
+  useEffect(() => {
+    const migrateExistingMemos = async () => {
+      if (currentUser && state.memos.length > 0) {
+        const memoService = MemoService.getInstance()
+        let needsUpdate = false
+        
+        for (const memo of state.memos) {
+          if (!memo.authorId || !memo.authorName) {
+            // Update memo with current user as author
+            memo.authorId = currentUser.id
+            memo.authorName = currentUser.username
+            needsUpdate = true
+            
+            try {
+              // Save the updated memo
+              await memoService.updateMemo(memo.id, {
+                title: memo.title,
+                body: memo.body,
+                tags: memo.tags,
+                projectId: memo.projectId || undefined,
+                priority: memo.priority
+              })
+            } catch (error) {
+              console.warn('Failed to migrate memo:', memo.id, error)
+            }
+          }
+        }
+        
+        if (needsUpdate) {
+          // Reload memos to reflect changes
+          await loadMemos()
+        }
+      }
+    }
+
+    migrateExistingMemos()
+  }, [currentUser, state.memos, loadMemos])
 
   // Navigation handlers
   const handleViewChange = useCallback((view: ViewType, memoId?: string) => {
@@ -192,8 +245,23 @@ function App() {
               <h1 className="text-xl font-semibold text-gray-900">TestMemo</h1>
             </div>
             
-            {/* Sync Status */}
+            {/* User info and Sync Status */}
             <div className="flex items-center space-x-4">
+              {currentUser && (
+                <div className="flex items-center space-x-3">
+                  <span className="text-sm text-gray-700">
+                    こんにちは、{currentUser.username}さん
+                  </span>
+                  <button
+                    onClick={handleLogout}
+                    className="inline-flex items-center px-3 py-1 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                    title="ログアウト"
+                  >
+                    <ArrowRightOnRectangleIcon className="h-4 w-4 mr-1" />
+                    ログアウト
+                  </button>
+                </div>
+              )}
               <SyncStatusBar
                 syncState={syncState}
                 onSyncNow={async () => {
@@ -312,6 +380,14 @@ function App() {
         )}
       </main>
     </div>
+  )
+}
+
+function App() {
+  return (
+    <AuthWrapper>
+      <MainApp />
+    </AuthWrapper>
   )
 }
 
